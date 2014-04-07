@@ -1,0 +1,3 @@
+Fix positioning offset bug
+Implement stdin handling & FD waiting
+Implement resize handling
