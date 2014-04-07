@@ -297,17 +297,18 @@ int main(int argc, char** argv){
 		//TODO listen to x events as well as stdin
 		XNextEvent(RESOURCES.display,&event);
 		switch(event.type){
-			case Expose:
-				printf("Expose!\n");
-				draw_string(current_text, OPTIONS.font_name, width, height, 20, RESOURCES.display, RESOURCES.xft_drawable, RESOURCES.xft_text_color);
-				break;
-
 			case ConfigureNotify:
 				//TODO redraw
 				width=event.xconfigure.width;
 				height=event.xconfigure.height;
-
+				XClearWindow(RESOURCES.display, RESOURCES.main_window);
+				draw_string(current_text, OPTIONS.font_name, width, height, 20, RESOURCES.display, RESOURCES.xft_drawable, RESOURCES.xft_text_color);
 				printf("Configure! (%dx%d)\n", width, height);
+				break;
+
+			case Expose:
+				printf("Expose!\n");
+				draw_string(current_text, OPTIONS.font_name, width, height, 20, RESOURCES.display, RESOURCES.xft_drawable, RESOURCES.xft_text_color);
 				break;
 
 			case KeyPress:
