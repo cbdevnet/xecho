@@ -3,6 +3,14 @@ It takes input from the commandline or via stdin and
 tries to render it at the largest font size the window
 permits.
 
+xecho aims to have minimal dependencies and bloat,
+directly using Xlib and Xft for it's functionality.
+
+The latest development version can be checked out via 
+git from http://git.services.cbcdn.com/xecho
+Tagged releases are archived at 
+	http://dev.cbcdn.com/xecho/
+
 Options:
 -font <fontspec>	Font to be used
 -bc <colorspec>		Background color
