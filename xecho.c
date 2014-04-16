@@ -27,7 +27,7 @@ TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 #include <X11/Xft/Xft.h>
 #include <ctype.h>
 
-#include "xft_debug.c"
+//#include "xft_debug.c"
 
 volatile bool xecho_shutdown=false;
 
