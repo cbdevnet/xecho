@@ -300,6 +300,23 @@ int main(int argc, char** argv){
 
 	//set window properties
 	//XSetWMProperties
+	XSizeHints* size_hints=XAllocSizeHints();
+	XWMHints* wm_hints=XAllocWMHints();
+	XClassHint* class_hints=XAllocClassHint();
+
+	if(!size_hints||!wm_hints||!class_hints){
+		//FIXME should probably exit here
+		printf("Failed to allocate hinting structures\n");
+	}
+
+	class_hints->res_name=argv[0];
+	class_hints->res_class="xecho";
+
+	//XSetWMProperties(RESOURCES.display, RESOURCES.main_window, "xecho", NULL, argv, argc, size_hints, wm_hints, class_hints);
+	
+	XFree(size_hints);
+	XFree(wm_hints);
+	XFree(class_hints);
 
 	//set fullscreen mode
 	wm_state_fullscreen=XInternAtom(RESOURCES.display, "_NET_WM_STATE_FULLSCREEN", True);
@@ -345,5 +362,5 @@ int main(int argc, char** argv){
 				break;
 		}
 	}
-
+	return 0;
 }
