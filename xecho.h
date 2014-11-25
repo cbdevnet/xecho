@@ -12,7 +12,7 @@ typedef enum /*_ALIGNMENT*/ {
 } TEXT_ALIGN;
 
 typedef struct /*_CFG_ARGS*/ {
-	unsigned vrebosity;
+	unsigned verbosity;
 	unsigned padding;
 	TEXT_ALIGN alignment;
 	bool independent_resize;
