@@ -103,7 +103,7 @@ int args_parse(CFG* config, int argc, char** argv){
 		}
 	}
 
-	return i+1+1; //remember argv[0]
+	return i+1;
 }
 
 bool args_sane(CFG* config){

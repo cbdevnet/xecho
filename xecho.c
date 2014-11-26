@@ -27,6 +27,7 @@ int main(int argc, char** argv){
 		{NULL, 0}		
 	};
 	int args_end;
+	unsigned text_length, i;
 	char* args_text=NULL;
 
 	//parse command line arguments
@@ -51,12 +52,32 @@ int main(int argc, char** argv){
 	//preprocess display text if not from stdin
 	if(!(config.handle_stdin)){
 		//copy arguments into buffer
+		text_length=0;
+		for(i=args_end;i<argc;i++){
+			text_length+=strlen(argv[i]+1);
+		}
+
+		args_text=calloc(text_length, sizeof(char));
+
+		text_length=0;
+		for(i=args_end;i<argc;i++){
+			strncpy(args_text+text_length, argv[i], strlen(argv[i]));
+			text_length+=strlen(argv[i]);
+			args_text[text_length++]=' ';
+		}
+		args_text[((text_length>0)?text_length:1)-1]=0;
+
+		fprintf(stderr, "Input text:\n\"%s\"\n", args_text);
+
+		//preprocess
 		if(!string_preprocess(args_text, true)){
 			printf("Failed to preprocess input text\n");
 			x11_cleanup(&xres);
 			args_cleanup(&config);
 			return usage(argv[0]);
 		}
+
+		fprintf(stderr, "Printing text:\n\"%s\"\n", args_text);
 	}
 	
 	//enter main loop
