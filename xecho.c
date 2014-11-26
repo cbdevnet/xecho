@@ -86,5 +86,10 @@ int main(int argc, char** argv){
 	//clear data
 	x11_cleanup(&xres);
 	args_cleanup(&config);
+
+	if(args_text){
+		free(args_text);
+	}
+
 	return 0;
 }
