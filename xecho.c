@@ -17,6 +17,7 @@ int main(int argc, char** argv){
 		NULL,	 	//background color
 		NULL		//fontname
 	};
+	XRESOURCES xres;
 	int args_end;
 
 	//parse command line arguments
@@ -30,8 +31,11 @@ int main(int argc, char** argv){
 		return usage(argv[0]);
 	}
 
-
 	//set up x11 display
+	if(!x11_init(&xres, &config)){
+	}
+
+	//preprocess display text if not from stdin
 	//enter main loop
 	
 	return 0;

@@ -23,4 +23,15 @@ typedef struct /*_CFG_ARGS*/ {
 	char* font_name;
 } CFG;
 
+typedef struct /*_XDATA*/ {
+	int screen;
+	Display* display;
+	Window main;
+	XftDraw* drawable;
+	XftColor text_color;
+	XftColor bg_color;
+} XRESOURCES;
+
+#include "colorspec.c"
 #include "arguments.c"
+#include "x11.c"
