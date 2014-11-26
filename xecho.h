@@ -23,6 +23,11 @@ typedef struct /*_CFG_ARGS*/ {
 	char* font_name;
 } CFG;
 
+typedef struct /*XFD_AGGREG*/ {
+	int* fds;
+	unsigned size;
+} X_FDS;
+
 typedef struct /*_XDATA*/ {
 	int screen;
 	Display* display;
@@ -30,6 +35,7 @@ typedef struct /*_XDATA*/ {
 	XftDraw* drawable;
 	XftColor text_color;
 	XftColor bg_color;
+	X_FDS xfds;
 } XRESOURCES;
 
 #define DEFAULT_FONT "verdana"

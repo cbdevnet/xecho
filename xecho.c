@@ -15,9 +15,17 @@ int main(int argc, char** argv){
 		0, 		//forced size
 		NULL,	 	//text color
 		NULL,	 	//background color
-		NULL		//fontname
+		NULL		//font name
 	};
-	XRESOURCES xres;
+	XRESOURCES xres={
+		0,
+		NULL,
+		0,
+		NULL,
+		{},
+		{},
+		{NULL, 0}		
+	};
 	int args_end;
 
 	//parse command line arguments
