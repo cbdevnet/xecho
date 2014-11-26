@@ -38,6 +38,13 @@ typedef struct /*_XDATA*/ {
 	X_FDS xfds;
 } XRESOURCES;
 
+typedef struct /*_TEXT_BLOCK*/ {
+	unsigned x;
+	unsigned y;
+	unsigned size;
+	char* text;
+} TEXTBLOCK;
+
 #define DEFAULT_FONT "verdana"
 #define DEFAULT_TEXTCOLOR "black"
 #define DEFAULT_WINCOLOR "white"
@@ -45,3 +52,5 @@ typedef struct /*_XDATA*/ {
 #include "colorspec.c"
 #include "arguments.c"
 #include "x11.c"
+#include "strings.c"
+#include "logic.c"

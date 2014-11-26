@@ -27,6 +27,7 @@ int main(int argc, char** argv){
 		{NULL, 0}		
 	};
 	int args_end;
+	char* args_text=NULL;
 
 	//parse command line arguments
 	args_end=args_parse(&config, argc-1, argv+1);
@@ -48,9 +49,18 @@ int main(int argc, char** argv){
 	}
 
 	//preprocess display text if not from stdin
-	//TODO
+	if(!(config.handle_stdin)){
+		//copy arguments into buffer
+		if(!string_preprocess(args_text, true)){
+			printf("Failed to preprocess input text\n");
+			x11_cleanup(&xres);
+			args_cleanup(&config);
+			return usage(argv[0]);
+		}
+	}
+	
 	//enter main loop
-	//TODO
+	xecho(&config, &xres, args_text);
 
 	//clear data
 	x11_cleanup(&xres);

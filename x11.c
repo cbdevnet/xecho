@@ -167,7 +167,10 @@ bool x11_init(XRESOURCES* res, CFG* config){
 		fprintf(stderr, "Failed to allocate xfd memory\n");
 		return false;
 	}
-	XAddConnectionWatch(res->display, xconn_watch, (void*)(&(res->xfds)));
+	if(XAddConnectionWatch(res->display, xconn_watch, (void*)(&(res->xfds)))==0){
+		fprintf(stderr, "Failed to register connection watch procedure\n");
+		return false;
+	}
 	
 	return true;
 }
