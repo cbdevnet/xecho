@@ -107,19 +107,37 @@ int args_parse(CFG* config, int argc, char** argv){
 }
 
 bool args_sane(CFG* config){
+	//string memory is allocated in order to be able to
+	//simply free() them later
+
 	if(!(config->font_name)){
-		fprintf(stderr, "No font name specified, using default verdana\n");
-		config->font_name="verdana";
+		fprintf(stderr, "No font name specified, using default.\n");
+		config->font_name=calloc(strlen(DEFAULT_FONT)+1, sizeof(char));
+		if(!(config->font_name)){
+			fprintf(stderr, "Failed to allocate memory\n");
+			return false;
+		}
+		strncpy(config->font_name, DEFAULT_FONT, strlen(DEFAULT_FONT));
 	}
 
 	if(!(config->bg_color)){
-		fprintf(stderr, "No window color specified, using default white\n");
-		config->bg_color="white";
+		fprintf(stderr, "No window color specified, using default\n");
+		config->bg_color=calloc(strlen(DEFAULT_WINCOLOR)+1, sizeof(char));
+		if(!(config->bg_color)){
+			fprintf(stderr, "Failed to allocate memory\n");
+			return false;
+		}
+		strncpy(config->bg_color, DEFAULT_WINCOLOR, strlen(DEFAULT_WINCOLOR));
 	}
 
 	if(!(config->text_color)){
-		fprintf(stderr, "No text color specified, using default black\n");
-		config->text_color="black";
+		fprintf(stderr, "No text color specified, using default\n");
+		config->text_color=calloc(strlen(DEFAULT_TEXTCOLOR)+1, sizeof(char));
+		if(!(config->text_color)){
+			fprintf(stderr, "Failed to allocate memory\n");
+			return false;
+		}
+		strncpy(config->text_color, DEFAULT_TEXTCOLOR, strlen(DEFAULT_TEXTCOLOR));
 	}
 
 	if(config->verbosity>1){
@@ -136,4 +154,10 @@ bool args_sane(CFG* config){
 	}
 
 	return true;
+}
+
+void args_cleanup(CFG* config){
+	free(config->text_color);
+	free(config->bg_color);
+	free(config->font_name);
 }

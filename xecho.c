@@ -28,15 +28,24 @@ int main(int argc, char** argv){
 
 	//config sanity check
 	if(!args_sane(&config)){
+		args_cleanup(&config);
 		return usage(argv[0]);
 	}
 
 	//set up x11 display
 	if(!x11_init(&xres, &config)){
+		x11_cleanup(&xres);
+		args_cleanup(&config);
+		return usage(argv[0]);
 	}
 
 	//preprocess display text if not from stdin
+	//TODO
 	//enter main loop
-	
+	//TODO
+
+	//clear data
+	x11_cleanup(&xres);
+	args_cleanup(&config);
 	return 0;
 }

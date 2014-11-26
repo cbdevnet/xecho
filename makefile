@@ -7,7 +7,7 @@ clean:
 	rm xecho
 
 test:
-	valgrind --leak-check=full ./xecho qmt
+	valgrind -v --leak-check=full --track-origins=yes --show-reachable=yes ./xecho -vv qmt
 
 xhello:
 	$(CC) -I/usr/include/freetype2 -lXft -o xhello xhello.c

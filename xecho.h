@@ -32,6 +32,10 @@ typedef struct /*_XDATA*/ {
 	XftColor bg_color;
 } XRESOURCES;
 
+#define DEFAULT_FONT "verdana"
+#define DEFAULT_TEXTCOLOR "black"
+#define DEFAULT_WINCOLOR "white"
+
 #include "colorspec.c"
 #include "arguments.c"
 #include "x11.c"
