@@ -189,3 +189,8 @@ void x11_cleanup(XRESOURCES* xres){
 	XCloseDisplay(xres->display);
 	xfd_free(&(xres->xfds));
 }
+
+bool x11_recalculate_fonts(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
+	//TODO
+	return false;
+}

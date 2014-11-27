@@ -44,6 +44,7 @@ typedef struct /*_TEXT_BLOCK*/ {
 	unsigned y;
 	unsigned size;
 	char* text;
+	bool active;
 } TEXTBLOCK;
 
 #define DEFAULT_FONT "verdana"

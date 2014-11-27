@@ -54,7 +54,7 @@ int main(int argc, char** argv){
 		//copy arguments into buffer
 		text_length=0;
 		for(i=args_end;i<argc;i++){
-			text_length+=strlen(argv[i]+1);
+			text_length+=strlen(argv[i])+1;
 		}
 
 		args_text=calloc(text_length, sizeof(char));
