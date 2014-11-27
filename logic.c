@@ -24,25 +24,32 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 			//handle events
 			switch(event.type){
 				case ConfigureNotify:
+					fprintf(stderr, "Window configured to %dx%d\n", event.xconfigure.width, event.xconfigure.height);
 					if(window_width!=event.xconfigure.width||window_height!=event.xconfigure.height){
 						window_width=event.xconfigure.width;
 						window_height=event.xconfigure.height;
-						XClearWindow(xres->display, xres->main);
 
 						fprintf(stderr, "Recalculating font sizes\n");
+
 						//recalculate size
-						if(!x11_recalculate_fonts(config, xres, blocks)){
+						if(!x11_recalculate_fonts(config, xres, blocks, window_width, window_height)){
 							fprintf(stderr, "Font size calculation failed\n");
 							return -1;
 						}
 					}
-
-					fprintf(stderr, "Window configured to %dx%d\n", window_width, window_height);
+					else{
+						fprintf(stderr, "Configuration not changed, ignoring\n");
+					}
 					break;
 				
 				case Expose:
-					//TODO draw here
-					fprintf(stderr, "Window exposed\n");
+					//draw here
+					fprintf(stderr, "Window exposed, clearing and redrawing\n");
+					XClearWindow(xres->display, xres->main);
+					if(!x11_draw_blocks(config, xres, blocks)){
+						fprintf(stderr, "Failed to draw blocks\n");
+						return -1;
+					}
 					break;
 
 				case KeyPress:

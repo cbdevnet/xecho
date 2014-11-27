@@ -190,7 +190,89 @@ void x11_cleanup(XRESOURCES* xres){
 	xfd_free(&(xres->xfds));
 }
 
-bool x11_recalculate_fonts(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
-	//TODO
-	return false;
+bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
+	unsigned i;
+	double current_size;
+	XftFont* font=NULL;
+
+	//draw all blocks
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		//load font
+		if(!font||(font&&current_size!=blocks[i]->size)){
+			if(font){
+				XftFontClose(xres->display, font);
+			}
+			font=XftFontOpen(xres->display, xres->screen,
+					XFT_FAMILY, XftTypeString, config->font_name,
+					XFT_PIXEL_SIZE, XftTypeDouble, blocks[i]->size,
+					NULL
+			);
+			current_size=blocks[i]->size;
+			if(!font){
+				fprintf(stderr, "Failed to load block font (%s, %f)\n", config->font_name, current_size);
+				return false;
+			}
+		}
+
+		//draw text
+		fprintf(stderr, "Drawing block %d (%s) at %d|%d size %f\n", i, blocks[i]->text, blocks[i]->x, blocks[i]->y, blocks[i]->size);
+		XftDrawStringUtf8(xres->drawable, &(xres->text_color), font, blocks[i]->x, blocks[i]->y, (FcChar8*)blocks[i]->text, strlen(blocks[i]->text));
+	}
+
+	//clean up the mess
+	if(font){
+		XftFontClose(xres->display, font);
+	}
+
+	return true;
+}
+
+bool x11_recalculate_fonts(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height){
+	unsigned i;
+	XftFont* font=NULL;
+	XGlyphInfo extents;
+
+	unsigned widest_block=0, widest_block_width=0;
+
+	//FIXME respect force_size, still do alignment passes
+
+	//initialize calculation set
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		blocks[i]->calculated=false;
+		blocks[i]->y=20;
+		blocks[i]->size=10.0;
+	}
+
+	//load font for initial tests
+	font=XftFontOpen(xres->display, xres->screen,
+			XFT_FAMILY, XftTypeString, config->font_name,
+			XFT_PIXEL_SIZE, XftTypeDouble, 10.0,
+			NULL
+	);
+
+	if(!font){
+		fprintf(stderr, "Failed to open font %s for initial calculation\n", config->font_name);
+		return false;
+	}
+
+	//find widest block, using that one for global width maximization
+	//height is done by addition of all heights
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		XftTextExtentsUtf8(xres->display, font, (FcChar8*)blocks[i]->text, strlen(blocks[i]->text), &extents);
+		if(extents.xOff>widest_block_width){
+			widest_block_width=extents.xOff;
+			widest_block=i;
+		}
+	}
+
+	XftFontClose(xres->display, font);
+
+	fprintf(stderr, "Block %d (%s) is widest block with %d at pixelsize 10\n", widest_block, blocks[widest_block]->text, widest_block_width);
+
+	//TODO maximize globally, respect alignment for xvalue
+	//TODO if flag is set, optimize per block, respect alignment
+	//TODO respect padding
+	
+
+	return true;
 }

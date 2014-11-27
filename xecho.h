@@ -42,9 +42,14 @@ typedef struct /*_XDATA*/ {
 typedef struct /*_TEXT_BLOCK*/ {
 	unsigned x;
 	unsigned y;
-	unsigned size;
+	double size;
 	char* text;
 	bool active;
+	bool calculated;
+
+	//useful for drawing debug boxes
+	unsigned width;
+	unsigned height;
 } TEXTBLOCK;
 
 #define DEFAULT_FONT "verdana"
