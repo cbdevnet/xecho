@@ -69,11 +69,12 @@ bool string_block_store(TEXTBLOCK* block, char* stream, unsigned length){
 
 unsigned string_block_longest(TEXTBLOCK** blocks){
 	unsigned i;
-	unsigned longest_index=0;
+	unsigned longest_length=0, longest_index=0;
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
 		if(!(blocks[i]->calculated)){
-			if(strlen(blocks[i]->text)>strlen(blocks[longest_index]->text)){
+			if(strlen(blocks[i]->text)>longest_length){
 				longest_index=i;
+				longest_length=strlen(blocks[i]->text);
 			}
 		}
 	}
