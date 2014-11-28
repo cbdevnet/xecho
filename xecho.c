@@ -12,9 +12,11 @@ int main(int argc, char** argv){
 		ALIGN_CENTER, 	//alignment
 		false, 		//independent resize
 		false, 		//handle stdin
+		false,		//draw debug boxes
 		0, 		//forced size
 		NULL,	 	//text color
 		NULL,	 	//background color
+		NULL,		//debug color name
 		NULL		//font name
 	};
 	XRESOURCES xres={
@@ -22,6 +24,7 @@ int main(int argc, char** argv){
 		NULL,
 		0,
 		NULL,
+		{},
 		{},
 		{},
 		{NULL, 0}		

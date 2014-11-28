@@ -34,7 +34,7 @@ int args_parse(CFG* config, int argc, char** argv){
 		}
 		else if(!strcmp(argv[i], "-size")){
 			if(++i<argc){
-				config->force_size=strtoul(argv[i], NULL, 10);
+				config->force_size=(double)strtoul(argv[i], NULL, 10);
 			}
 			else{
 				fprintf(stderr, "No parameter for size\n");
@@ -74,6 +74,9 @@ int args_parse(CFG* config, int argc, char** argv){
 		}
 		else if(!strcmp(argv[i], "-stdin")){
 			config->handle_stdin=true;
+		}
+		else if(!strcmp(argv[i], "-debugboxes")){
+			config->debug_boxes=true;
 		}
 		else if(!strcmp(argv[i], "-font")){
 			if(++i<argc&&!(config->font_name)){
@@ -140,6 +143,16 @@ bool args_sane(CFG* config){
 		strncpy(config->text_color, DEFAULT_TEXTCOLOR, strlen(DEFAULT_TEXTCOLOR));
 	}
 
+	if(!(config->debug_color)){
+		fprintf(stderr, "No debug color specified, using default\n");
+		config->debug_color=calloc(strlen(DEFAULT_DEBUGCOLOR)+1, sizeof(char));
+		if(!(config->debug_color)){
+			fprintf(stderr, "Failed to allocate memory\n");
+			return false;
+		}
+		strncpy(config->debug_color, DEFAULT_DEBUGCOLOR, strlen(DEFAULT_DEBUGCOLOR));
+	}
+
 	if(config->verbosity>1){
 		fprintf(stderr, "Config summary\n");
 		fprintf(stderr, "Verbosity level: %d\n", config->verbosity);
@@ -147,7 +160,7 @@ bool args_sane(CFG* config){
 		fprintf(stderr, "Text alignment: %d\n", config->alignment);
 		fprintf(stderr, "Resize lines independently: %s\n", config->independent_resize?"true":"false");
 		fprintf(stderr, "Handle stdin: %s\n", config->handle_stdin?"true":"false");
-		fprintf(stderr, "Forced text size: %d\n", config->force_size);
+		fprintf(stderr, "Forced text size: %f\n", config->force_size);
 		fprintf(stderr, "Text colorspec: %s\n", config->text_color);
 		fprintf(stderr, "Window colorspec: %s\n", config->bg_color);
 		fprintf(stderr, "Font name: %s\n", config->font_name);

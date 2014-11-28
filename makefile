@@ -3,6 +3,9 @@
 all:
 	$(CC) -g -Wall -I/usr/include/freetype2 -lXft -lm -o xecho xecho.c
 
+old:
+	$(CC) -g -Wall -I/usr/include/freetype2 -lXft -lm -o xecho_old xecho_old.c
+
 clean:
 	rm xecho
 

@@ -19,9 +19,11 @@ typedef struct /*_CFG_ARGS*/ {
 	TEXT_ALIGN alignment;
 	bool independent_resize;
 	bool handle_stdin;
-	unsigned force_size;
+	bool debug_boxes;
+	double force_size;
 	char* text_color;
 	char* bg_color;
+	char* debug_color;
 	char* font_name;
 } CFG;
 
@@ -37,25 +39,24 @@ typedef struct /*_XDATA*/ {
 	XftDraw* drawable;
 	XftColor text_color;
 	XftColor bg_color;
+	XftColor debug_color;
 	X_FDS xfds;
 } XRESOURCES;
 
 typedef struct /*_TEXT_BLOCK*/ {
-	unsigned x;
-	unsigned y;
+	unsigned layout_x;
+	unsigned layout_y;
 	double size;
 	char* text;
 	bool active;
 	bool calculated;
-
-	//useful for drawing debug boxes
-	unsigned width;
-	unsigned height;
+	XGlyphInfo extents;
 } TEXTBLOCK;
 
 #define DEFAULT_FONT "verdana"
 #define DEFAULT_TEXTCOLOR "black"
 #define DEFAULT_WINCOLOR "white"
+#define DEFAULT_DEBUGCOLOR "red"
 
 #include "colorspec.c"
 #include "arguments.c"

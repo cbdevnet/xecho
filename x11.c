@@ -116,6 +116,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	//set up colors
 	res->text_color=colorspec_parse(config->text_color, res->display, res->screen);
 	res->bg_color=colorspec_parse(config->bg_color, res->display, res->screen);
+	res->debug_color=colorspec_parse(config->debug_color, res->display, res->screen);
 
 	//set up window params
 	window_attributes.background_pixel=res->bg_color.pixel;
@@ -182,7 +183,7 @@ void x11_cleanup(XRESOURCES* xres){
 
 	XftColorFree(xres->display, DefaultVisual(xres->display, xres->screen), DefaultColormap(xres->display, xres->screen), &(xres->text_color));
 	XftColorFree(xres->display, DefaultVisual(xres->display, xres->screen), DefaultColormap(xres->display, xres->screen), &(xres->bg_color));
-	//FIXME close window?
+	XftColorFree(xres->display, DefaultVisual(xres->display, xres->screen), DefaultColormap(xres->display, xres->screen), &(xres->debug_color));
 	if(xres->drawable){
 		XftDrawDestroy(xres->drawable);
 	}
@@ -194,6 +195,13 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 	unsigned i;
 	double current_size;
 	XftFont* font=NULL;
+
+	//draw debug blocks if requested
+	if(config->debug_boxes){
+		for(i=0;blocks[i]&&blocks[i]->active;i++){
+			 XftDrawRect(xres->drawable, &(xres->debug_color), blocks[i]->layout_x, blocks[i]->layout_y, blocks[i]->extents.width, blocks[i]->extents.height);
+		}
+	}
 
 	//draw all blocks
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
@@ -215,8 +223,18 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 		}
 
 		//draw text
-		fprintf(stderr, "Drawing block %d (%s) at %d|%d size %f\n", i, blocks[i]->text, blocks[i]->x, blocks[i]->y, blocks[i]->size);
-		XftDrawStringUtf8(xres->drawable, &(xres->text_color), font, blocks[i]->x, blocks[i]->y, (FcChar8*)blocks[i]->text, strlen(blocks[i]->text));
+		fprintf(stderr, "Drawing block %d (%s) at layoutcoords %d|%d size %f\n", i, blocks[i]->text, 
+				blocks[i]->layout_x+blocks[i]->extents.x, 
+				blocks[i]->layout_y+blocks[i]->extents.y, 
+				blocks[i]->size);
+
+		XftDrawStringUtf8(xres->drawable, 
+				&(xres->text_color), 
+				font, 
+				blocks[i]->layout_x+blocks[i]->extents.x, 
+				blocks[i]->layout_y+blocks[i]->extents.y, 
+				(FcChar8*)blocks[i]->text, 
+				strlen(blocks[i]->text));
 	}
 
 	//clean up the mess
@@ -227,26 +245,100 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 	return true;
 }
 
-bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height, char* font_name, double start_size){
-	unsigned i;
-	//TODO implement this.
-	//find maximum size for bounding box of all
-	//write updates to active
-	//set active to false for longest
+void x11_block_bounds(XRESOURCES* xres, TEXTBLOCK* block, XftFont* font){
+	XftTextExtentsUtf8(xres->display, font, (FcChar8*)block->text, strlen(block->text), &(block->extents));
+	fprintf(stderr, "Block \"%s\" extents: width %d, height %d, x %d, y %d, xOff %d, yOff %d\n",
+			block->text, block->extents.width, block->extents.height, block->extents.x, block->extents.y,
+			block->extents.xOff, block->extents.yOff);
 
-	//if not individual, done
-	//if last, done
-	
-	//DEMO
-	for(i=0;blocks[i]&&blocks[i]->active;i++){
-		blocks[i]->size=20;
-		blocks[i]->y=20+i*20;
-	}
+	//block->width=extents.xOff;
+	//block->height=extents.height;
+	//block->x=extents.x;
+	//block->y=extents.y;
+}
+
+
+bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height, char* font_name, unsigned start_size){
+	unsigned i, bounding_width, bounding_height;
+	XftFont* font=NULL;
+	double current_size=start_size;
+	bool done=false;
+	bool scale_up=true;
+
+	do{
+		//scale up until out of bounds
+		fprintf(stderr, "Doing block maximization for %dx%d bounds with font %s at %f, directionality %s\n", width, height, font_name, current_size, scale_up?"up":"down");
+		
+		//build font
+		font=XftFontOpen(xres->display, xres->screen,
+				XFT_FAMILY, XftTypeString, font_name,
+				XFT_PIXEL_SIZE, XftTypeDouble, current_size,
+				NULL
+		);
+
+		if(!font){
+			fprintf(stderr, "Failed to allocate font %s at %f\n", font_name, current_size);
+			return false;
+		}
+
+		//calculate bounding boxes with current size for all nonfinished
+		for(i=0;blocks[i]&&blocks[i]->active;i++){
+			if(!blocks[i]->calculated){
+				x11_block_bounds(xres, blocks[i], font);
+				blocks[i]->size=current_size;
+			}
+		}
+
+		XftFontClose(xres->display, font);
+		
+		//build bounding box
+		bounding_width=0;
+		bounding_height=0;
+		for(i=0;blocks[i]&&blocks[i]->active;i++){
+			bounding_height+=blocks[i]->extents.height;
+			if(blocks[i]->extents.width>bounding_width){
+				bounding_width=blocks[i]->extents.width;
+			}
+		}
+
+		fprintf(stderr, "At size %f bounding box is %dx%d\n", current_size, bounding_width, bounding_height);
+		if(bounding_width>width||bounding_height>height){
+			if(scale_up){
+				fprintf(stderr, "Scaled out of window bounds, reversing\n");
+				scale_up=false;
+				current_size--;
+			}
+			else{
+				fprintf(stderr, "Over window bounds, decreasing font size\n");
+				current_size--;
+			}
+		}
+		else{
+			if(scale_up){
+				fprintf(stderr, "Inside bounds, increasing font size\n");
+				current_size++;
+			}
+			else{
+				fprintf(stderr, "Size fixed at %f\n", current_size);
+				done=true;
+			}
+		}
+	}while(!done);
+
+	//TODO set active to false for longest
 	return true;
 }
 
 bool x11_align_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigned width, unsigned height){
 	//TODO align blocks withing bounding rectangle according to parameters
+	//TODO respect padding
+	unsigned current_y=20, i;
+
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		blocks[i]->layout_y=current_y;
+		current_y+=blocks[i]->extents.height;
+	}
+
 	return true;
 }
 
@@ -255,7 +347,7 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	XftFont* font=NULL;
 	XGlyphInfo extents;
 
-	double start_size;
+	unsigned start_size;
 	unsigned widest_block=0, widest_block_width=0;
 	unsigned layout_width, layout_height;
 
@@ -303,14 +395,35 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	//guess font size
 	start_size=fabs(layout_width/strlen(blocks[widest_block]->text));
 
-	fprintf(stderr, "Widest Block %d (%s) at %d, guessing initial size %f\n", widest_block, blocks[widest_block]->text, widest_block_width, start_size);
+	fprintf(stderr, "Widest Block %d (%s) at %d, guessing initial size %d\n", widest_block, blocks[widest_block]->text, widest_block_width, start_size);
 
 	//do binary search for match size
 	//FIXME do multiple passes if flag is set
-	//FIXME might want to update start_size
-	//FIXME respect force_size
-	if(!x11_maximize_blocks(xres, blocks, layout_width, layout_height, config->font_name, start_size)){
-		return false;
+	if(config->force_size==0){
+		if(!x11_maximize_blocks(xres, blocks, layout_width, layout_height, config->font_name, start_size)){
+			return false;
+		}
+	}
+	else{
+		//load font with forced size
+		font=XftFontOpen(xres->display, xres->screen,
+				XFT_FAMILY, XftTypeString, config->font_name,
+				XFT_PIXEL_SIZE, XftTypeDouble, config->force_size,
+				NULL
+		);
+
+		if(!font){
+			fprintf(stderr, "Could not load font\n");
+			return false;
+		}
+
+		//bounds calculation
+		for(i=0;blocks[i]&&blocks[i]->active;i++){
+			x11_block_bounds(xres, blocks[i], font);
+			blocks[i]->size=config->force_size;
+		}
+
+		XftFontClose(xres->display, font);
 	}
 	
 	//do alignment pass
