@@ -35,7 +35,7 @@ int main(int argc, char** argv){
 
 	//parse command line arguments
 	args_end=args_parse(&config, argc-1, argv+1);
-	if(args_end<0){
+	if(args_end<1){
 		return usage(argv[0]);
 	}
 

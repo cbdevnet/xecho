@@ -196,6 +196,11 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 	double current_size;
 	XftFont* font=NULL;
 
+	//early exit
+	if(!blocks||!blocks[0]){
+		return true;
+	}
+
 	//draw debug blocks if requested
 	if(config->debug_boxes){
 		for(i=0;blocks[i]&&blocks[i]->active;i++){
@@ -368,11 +373,11 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	unsigned layout_width, layout_height;
 
 	//early exit.
-	if(!blocks[0]){
+	if(!blocks||!blocks[0]){
 		return true;
 	}
 
-	//calculate layout width
+	//calculate layout volume
 	if(width<config->padding){
 		layout_width=width;
 	}

@@ -105,6 +105,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 				//TODO read
 				//TODO preprocess
 				//TODO blockify
+				fprintf(stderr, "Data on stdin\n");
 			}
 
 		}
