@@ -29,11 +29,11 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 						window_width=event.xconfigure.width;
 						window_height=event.xconfigure.height;
 
-						fprintf(stderr, "Recalculating font sizes\n");
+						fprintf(stderr, "Recalculating blocks\n");
 
 						//recalculate size
-						if(!x11_recalculate_fonts(config, xres, blocks, window_width, window_height)){
-							fprintf(stderr, "Font size calculation failed\n");
+						if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
+							fprintf(stderr, "Block calculation failed\n");
 							return -1;
 						}
 					}

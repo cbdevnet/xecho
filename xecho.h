@@ -5,6 +5,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xft/Xft.h>
 #include <ctype.h>
+#include <math.h>
 
 typedef enum /*_ALIGNMENT*/ {
 	ALIGN_CENTER,

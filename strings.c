@@ -43,8 +43,7 @@ bool string_preprocess(char* input, bool handle_escapes){
 				text_pos=-1; //is increased directly below
 				break;
 			case '\b':
-				//delete one character back, but not over newline
-				//TODO
+				//TODO delete one character back, but not over newline
 				break;
 		}
 

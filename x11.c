@@ -227,23 +227,57 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 	return true;
 }
 
-bool x11_recalculate_fonts(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height){
+bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height, char* font_name, double start_size){
+	unsigned i;
+	//TODO implement this.
+	//find maximum size for bounding box of all
+	//write updates to active
+	//set active to false for longest
+
+	//if not individual, done
+	//if last, done
+	
+	//DEMO
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		blocks[i]->size=20;
+		blocks[i]->y=20+i*20;
+	}
+	return true;
+}
+
+bool x11_align_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigned width, unsigned height){
+	//TODO align blocks withing bounding rectangle according to parameters
+	return true;
+}
+
+bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height){
 	unsigned i;
 	XftFont* font=NULL;
 	XGlyphInfo extents;
 
+	double start_size;
 	unsigned widest_block=0, widest_block_width=0;
+	unsigned layout_width, layout_height;
 
-	//FIXME respect force_size, still do alignment passes
+	if(width<config->padding){
+		layout_width=width;
+	}
+	else{
+		layout_width=width-config->padding;
+	}
+	if(height<config->padding){
+		layout_height=height;
+	}
+	else{
+		layout_height=height-config->padding;
+	}
 
 	//initialize calculation set
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
 		blocks[i]->calculated=false;
-		blocks[i]->y=20;
-		blocks[i]->size=10.0;
 	}
 
-	//load font for initial tests
+	//load font for size guess
 	font=XftFontOpen(xres->display, xres->screen,
 			XFT_FAMILY, XftTypeString, config->font_name,
 			XFT_PIXEL_SIZE, XftTypeDouble, 10.0,
@@ -255,8 +289,7 @@ bool x11_recalculate_fonts(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, un
 		return false;
 	}
 
-	//find widest block, using that one for global width maximization
-	//height is done by addition of all heights
+	//find widest block, using that one for guessing starting font size
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
 		XftTextExtentsUtf8(xres->display, font, (FcChar8*)blocks[i]->text, strlen(blocks[i]->text), &extents);
 		if(extents.xOff>widest_block_width){
@@ -267,12 +300,23 @@ bool x11_recalculate_fonts(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, un
 
 	XftFontClose(xres->display, font);
 
-	fprintf(stderr, "Block %d (%s) is widest block with %d at pixelsize 10\n", widest_block, blocks[widest_block]->text, widest_block_width);
+	//guess font size
+	start_size=fabs(layout_width/strlen(blocks[widest_block]->text));
 
-	//TODO maximize globally, respect alignment for xvalue
-	//TODO if flag is set, optimize per block, respect alignment
-	//TODO respect padding
+	fprintf(stderr, "Widest Block %d (%s) at %d, guessing initial size %f\n", widest_block, blocks[widest_block]->text, widest_block_width, start_size);
+
+	//do binary search for match size
+	//FIXME do multiple passes if flag is set
+	//FIXME might want to update start_size
+	//FIXME respect force_size
+	if(!x11_maximize_blocks(xres, blocks, layout_width, layout_height, config->font_name, start_size)){
+		return false;
+	}
 	
+	//do alignment pass
+	if(!x11_align_blocks(xres, config, blocks, width, height)){
+		return false;
+	}
 
 	return true;
 }
