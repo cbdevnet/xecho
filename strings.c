@@ -67,6 +67,19 @@ bool string_block_store(TEXTBLOCK* block, char* stream, unsigned length){
 	return true;
 }
 
+unsigned string_block_longest(TEXTBLOCK** blocks){
+	unsigned i;
+	unsigned longest_index=0;
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		if(!(blocks[i]->calculated)){
+			if(strlen(blocks[i]->text)>strlen(blocks[longest_index]->text)){
+				longest_index=i;
+			}
+		}
+	}
+	return longest_index;
+}
+
 bool string_blockify(TEXTBLOCK*** blocks, char* input){
 	unsigned i, num_blocks=0, blocks_needed=1, input_offset=0, current_block=0;
 

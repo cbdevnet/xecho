@@ -258,12 +258,25 @@ void x11_block_bounds(XRESOURCES* xres, TEXTBLOCK* block, XftFont* font){
 }
 
 
-bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height, char* font_name, unsigned start_size){
+bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height, char* font_name){
 	unsigned i, bounding_width, bounding_height;
 	XftFont* font=NULL;
-	double current_size=start_size;
+	double current_size=1;
 	bool done=false;
 	bool scale_up=true;
+	unsigned done_block;
+
+	//FIXME this function is where most time is wasted.
+
+	//find start size
+	//sizes in sets to be maximized are always the same,
+	//since any pass modifies all active blocks to the same size
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		if(!(blocks[i]->calculated)){
+			current_size=blocks[i]->size;
+			break;
+		}
+	}
 
 	do{
 		//scale up until out of bounds
@@ -325,7 +338,11 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 		}
 	}while(!done);
 
-	//TODO set active to false for longest
+	//set active to false for longest
+	done_block=string_block_longest(blocks);
+	blocks[done_block]->calculated=true;
+	fprintf(stderr, "Marked block %d as done\n", done_block);
+
 	return true;
 }
 
@@ -347,8 +364,14 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	XftFont* font=NULL;
 
 	unsigned start_size;
+	unsigned num_blocks=0;
 	unsigned widest_block_length=0;
 	unsigned layout_width, layout_height;
+
+	//early exit.
+	if(!blocks[0]){
+		return true;
+	}
 
 	if(width<config->padding){
 		layout_width=width;
@@ -366,24 +389,28 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	//initialize calculation set
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
 		blocks[i]->calculated=false;
+		num_blocks++;
 	}
 
 	//guess font size
-	for(i=0;blocks[i]&&blocks[i]->active;i++){
-		if(!(blocks[i]->calculated)&&strlen(blocks[i]->text)>widest_block_length){
-			widest_block_length=strlen(blocks[i]->text);
-		}
-	}
-	start_size=fabs(layout_width/widest_block_length);
+	start_size=fabs(layout_width/strlen(blocks[string_block_longest(blocks)]->text));
 
 	fprintf(stderr, "Widest block length %d, guessing initial size %d\n", widest_block_length, start_size);
 
-	//do binary search for match size
-	//FIXME do multiple passes if flag is set
 	if(config->force_size==0){
-		if(!x11_maximize_blocks(xres, blocks, layout_width, layout_height, config->font_name, start_size)){
-			return false;
+		//do binary search for match size
+		blocks[0]->size=start_size;
+
+		//do multiple passes if flag is set
+		i=0;
+		do{
+			fprintf(stderr, "Running maximizer for pass %d (%d blocks)\n", i, num_blocks);
+			if(!x11_maximize_blocks(xres, blocks, layout_width, layout_height, config->font_name)){
+				return false;
+			}
+			i++;
 		}
+		while(config->independent_resize&&i<num_blocks);
 	}
 	else{
 		//load font with forced size

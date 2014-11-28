@@ -66,6 +66,6 @@ typedef struct /*_TEXT_BLOCK*/ {
 
 #include "colorspec.c"
 #include "arguments.c"
-#include "x11.c"
 #include "strings.c"
+#include "x11.c"
 #include "logic.c"
