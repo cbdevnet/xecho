@@ -365,7 +365,6 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 
 	unsigned start_size;
 	unsigned num_blocks=0;
-	unsigned widest_block_length=0;
 	unsigned layout_width, layout_height;
 
 	//early exit.
@@ -373,6 +372,7 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 		return true;
 	}
 
+	//calculate layout width
 	if(width<config->padding){
 		layout_width=width;
 	}
@@ -392,10 +392,9 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 		num_blocks++;
 	}
 
-	//guess font size
+	//guess initial font size
 	start_size=fabs(layout_width/strlen(blocks[string_block_longest(blocks)]->text));
-
-	fprintf(stderr, "Widest block length %d, guessing initial size %d\n", widest_block_length, start_size);
+	fprintf(stderr, "Guessing initial size %d\n", start_size);
 
 	if(config->force_size==0){
 		//do binary search for match size
