@@ -13,18 +13,48 @@ int args_parse(CFG* config, int argc, char** argv){
 		}
 		else if(!strcmp(argv[i], "-align")){
 			if(++i<argc){
-				if(!strcmp(argv[i], "left")){
-					config->alignment=ALIGN_LEFT;
-				}
-				else if(!strcmp(argv[i], "right")){
-					config->alignment=ALIGN_RIGHT;
-				}
-				else if(!strcmp(argv[i], "center")){
-					config->alignment=ALIGN_CENTER;
-				}
-				else{
-					fprintf(stderr, "Invalid alignment\n");
-					return -1;
+				switch(argv[i][0]){
+					case 'n':
+					case 'N':
+						switch(argv[i][1]){
+							case 'e':
+							case 'E':
+								config->alignment=ALIGN_NORTHEAST;
+								break;
+							case 'w':
+							case 'W':
+								config->alignment=ALIGN_NORTHWEST;
+								break;
+							default:
+								config->alignment=ALIGN_NORTH;
+						}
+						break;
+					case 'e':
+					case 'E':
+						config->alignment=ALIGN_EAST;
+						break;
+					case 's':
+					case 'S':
+						switch(argv[i][1]){
+							case 'e':
+							case 'E':
+								config->alignment=ALIGN_SOUTHEAST;
+								break;
+							case 'w':
+							case 'W':
+								config->alignment=ALIGN_SOUTHWEST;
+								break;
+							default:
+								config->alignment=ALIGN_SOUTH;
+						}
+						break;
+					case 'w':
+					case 'W':
+						config->alignment=ALIGN_WEST;
+						break;
+					default:
+						fprintf(stderr, "Invalid alignment specifier\n");
+						return -1;
 				}
 			}
 			else{
