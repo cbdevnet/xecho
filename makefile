@@ -8,6 +8,7 @@ old:
 
 clean:
 	rm xecho
+	rm xecho_old
 
 test:
 	valgrind -v --leak-check=full --track-origins=yes --show-reachable=yes ./xecho -vv qmt

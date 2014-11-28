@@ -99,6 +99,7 @@ int args_parse(CFG* config, int argc, char** argv){
 			config->verbosity=c-1;
 		}
 		else if(!strncmp(argv[i], "--", 2)){
+			i++;
 			break;
 		}
 		else{
@@ -144,6 +145,7 @@ bool args_sane(CFG* config){
 	}
 
 	if(!(config->debug_color)){
+		//TODO make this configurable
 		fprintf(stderr, "No debug color specified, using default\n");
 		config->debug_color=calloc(strlen(DEFAULT_DEBUGCOLOR)+1, sizeof(char));
 		if(!(config->debug_color)){
@@ -163,6 +165,7 @@ bool args_sane(CFG* config){
 		fprintf(stderr, "Forced text size: %f\n", config->force_size);
 		fprintf(stderr, "Text colorspec: %s\n", config->text_color);
 		fprintf(stderr, "Window colorspec: %s\n", config->bg_color);
+		fprintf(stderr, "Debug colorspec: %s\n", config->debug_color);
 		fprintf(stderr, "Font name: %s\n", config->font_name);
 	}
 

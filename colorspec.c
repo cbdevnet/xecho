@@ -21,12 +21,12 @@ XftColor colorspec_parse(char* cs, Display* display, int screen){
 
 	if(*cs=='#'){
 		if(strlen(cs)!=7){
-			printf("Invalid colorspec length\n");
+			fprintf(stderr, "Invalid colorspec length\n");
 		}
 
 		for(i=1;i<strlen(cs);i++){
 			if(!isxdigit(cs[i])){
-				printf("Invalid digit in colorspec: %c\n", cs[i]);
+				fprintf(stderr, "Invalid digit in colorspec: %c\n", cs[i]);
 				return rv;
 			}
 		}
@@ -35,15 +35,15 @@ XftColor colorspec_parse(char* cs, Display* display, int screen){
 		xrender_color.green=colorspec_read_byte(cs+3);
 		xrender_color.blue=colorspec_read_byte(cs+5);
 
-		printf("Read colorspec %s as r:%04x g:%04x b:%04x\n", cs, xrender_color.red, xrender_color.green, xrender_color.blue);
+		fprintf(stderr, "Read colorspec %s as r:%04x g:%04x b:%04x\n", cs, xrender_color.red, xrender_color.green, xrender_color.blue);
 
 		if(!XftColorAllocValue(display, DefaultVisual(display, screen), DefaultColormap(display, screen), &xrender_color, &rv)){
-			printf("Failed to allocate color\n");
+			fprintf(stderr, "Failed to allocate color\n");
 		}
 	}
 	else{
 		if(!XftColorAllocName(display, DefaultVisual(display, screen), DefaultColormap(display, screen), cs, &rv)){
-			printf("Failed to get color by name\n");
+			fprintf(stderr, "Failed to get color by name\n");
 		}
 	}
 	return rv;

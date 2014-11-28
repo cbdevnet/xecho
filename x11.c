@@ -345,10 +345,9 @@ bool x11_align_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigne
 bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height){
 	unsigned i;
 	XftFont* font=NULL;
-	XGlyphInfo extents;
 
 	unsigned start_size;
-	unsigned widest_block=0, widest_block_width=0;
+	unsigned widest_block_length=0;
 	unsigned layout_width, layout_height;
 
 	if(width<config->padding){
@@ -369,33 +368,15 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 		blocks[i]->calculated=false;
 	}
 
-	//load font for size guess
-	font=XftFontOpen(xres->display, xres->screen,
-			XFT_FAMILY, XftTypeString, config->font_name,
-			XFT_PIXEL_SIZE, XftTypeDouble, 10.0,
-			NULL
-	);
-
-	if(!font){
-		fprintf(stderr, "Failed to open font %s for initial calculation\n", config->font_name);
-		return false;
-	}
-
-	//find widest block, using that one for guessing starting font size
+	//guess font size
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
-		XftTextExtentsUtf8(xres->display, font, (FcChar8*)blocks[i]->text, strlen(blocks[i]->text), &extents);
-		if(extents.xOff>widest_block_width){
-			widest_block_width=extents.xOff;
-			widest_block=i;
+		if(!(blocks[i]->calculated)&&strlen(blocks[i]->text)>widest_block_length){
+			widest_block_length=strlen(blocks[i]->text);
 		}
 	}
+	start_size=fabs(layout_width/widest_block_length);
 
-	XftFontClose(xres->display, font);
-
-	//guess font size
-	start_size=fabs(layout_width/strlen(blocks[widest_block]->text));
-
-	fprintf(stderr, "Widest Block %d (%s) at %d, guessing initial size %d\n", widest_block, blocks[widest_block]->text, widest_block_width, start_size);
+	fprintf(stderr, "Widest block length %d, guessing initial size %d\n", widest_block_length, start_size);
 
 	//do binary search for match size
 	//FIXME do multiple passes if flag is set
