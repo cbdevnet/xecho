@@ -352,13 +352,61 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 }
 
 bool x11_align_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigned width, unsigned height){
-	//TODO align blocks withing bounding rectangle according to parameters
-	//TODO respect padding
-	unsigned current_y=20, i;
+	//align blocks within bounding rectangle according to configured alignment
+	unsigned i, total_height=0, current_height=0;
 
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
-		blocks[i]->layout_y=current_y;
-		current_y+=blocks[i]->extents.height;
+		total_height+=blocks[i]->extents.height;
+	}
+
+	//FIXME this might underflow in some cases
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		//align x axis
+		switch(config->alignment){
+			case ALIGN_NORTH:
+			case ALIGN_SOUTH:
+			case ALIGN_CENTER:
+				//centered
+				blocks[i]->layout_x=(width-(blocks[i]->extents.width))/2;
+				break;
+			case ALIGN_NORTHWEST:
+			case ALIGN_WEST:
+			case ALIGN_SOUTHWEST:
+				//left
+				blocks[i]->layout_x=config->padding;
+				break;
+			case ALIGN_NORTHEAST:
+			case ALIGN_EAST:
+			case ALIGN_SOUTHEAST:
+				//right
+				blocks[i]->layout_x=width-(blocks[i]->extents.width)-config->padding;
+				break;
+		}
+
+		//align y axis
+		switch(config->alignment){
+			case ALIGN_WEST:
+			case ALIGN_EAST:
+			case ALIGN_CENTER:
+				//centered
+				blocks[i]->layout_y=((height-total_height)/2)+current_height;
+				current_height+=blocks[i]->extents.height;
+				break;
+			case ALIGN_NORTHWEST:
+			case ALIGN_NORTH:
+			case ALIGN_NORTHEAST:
+				//top
+				blocks[i]->layout_y=(config->padding)+current_height;
+				current_height+=blocks[i]->extents.height;
+				break;
+			case ALIGN_SOUTHWEST:
+			case ALIGN_SOUTH:
+			case ALIGN_SOUTHEAST:
+				//bottom
+				blocks[i]->layout_y=height-total_height-(config->padding);
+				total_height-=blocks[i]->extents.height;
+				break;
+		}
 	}
 
 	return true;
