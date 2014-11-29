@@ -32,10 +32,11 @@ int main(int argc, char** argv){
 	int args_end;
 	unsigned text_length, i;
 	char* args_text=NULL;
+	long flags;
 
 	//parse command line arguments
 	args_end=args_parse(&config, argc-1, argv+1);
-	if(args_end<1){
+	if(argc-args_end<1&&!config.handle_stdin){
 		return usage(argv[0]);
 	}
 
@@ -52,8 +53,8 @@ int main(int argc, char** argv){
 		return usage(argv[0]);
 	}
 
-	//preprocess display text if not from stdin
-	if(!(config.handle_stdin)){
+	//preprocess display text if given
+	if(argc-args_end>0){
 		//copy arguments into buffer
 		text_length=0;
 		for(i=args_end;i<argc;i++){
@@ -81,6 +82,14 @@ int main(int argc, char** argv){
 		}
 
 		fprintf(stderr, "Printing text:\n\"%s\"\n", args_text);
+	}
+
+	//prepare stdin
+	if(config.handle_stdin){
+		fprintf(stderr, "Marking stdin as nonblocking\n");
+		flags=fcntl(0, F_GETFL, 0);
+		flags|=O_NONBLOCK;
+		fcntl(0, F_SETFL, flags);
 	}
 	
 	//enter main loop
