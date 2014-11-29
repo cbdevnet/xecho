@@ -450,7 +450,6 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 
 	//initialize calculation set
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
-		fprintf(stderr, "Block %d reporting in\n", i);
 		blocks[i]->calculated=false;
 		num_blocks++;
 	}

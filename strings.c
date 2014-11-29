@@ -94,7 +94,7 @@ bool string_blockify(TEXTBLOCK*** blocks, char* input){
 	if(!(*blocks)){
 		fprintf(stderr, "Initially allocating block container for %d pointers\n", blocks_needed+1);
 		//allocate array structure
-		*blocks=calloc(sizeof(TEXTBLOCK*), blocks_needed+1);
+		(*blocks)=calloc(blocks_needed+1, sizeof(TEXTBLOCK*));
 		if(!(*blocks)){
 			fprintf(stderr, "Failed to allocate memory\n");
 			return false;
