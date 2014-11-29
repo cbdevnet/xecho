@@ -273,6 +273,14 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 
 	//FIXME this function is where most time is wasted.
 
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+	}
+
+	//no blocks, bail out
+	if(i<1){
+		return true;
+	}
+
 	//find start size
 	//sizes in sets to be maximized are always the same,
 	//since any pass modifies all active blocks to the same size
