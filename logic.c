@@ -199,8 +199,19 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 	}
 
 	//free data
+	if(display_buffer){
+		free(display_buffer);
+	}
+	
 	if(blocks){
 		//TODO free blocks structure
+		for(i=0;blocks[i];i++){
+			if(blocks[i]->text){
+				free(blocks[i]->text);
+			}
+			free(blocks[i]);
+		}
+		free(blocks);
 	}
 
 	return abort;

@@ -205,5 +205,6 @@ bool args_sane(CFG* config){
 void args_cleanup(CFG* config){
 	free(config->text_color);
 	free(config->bg_color);
+	free(config->debug_color);
 	free(config->font_name);
 }

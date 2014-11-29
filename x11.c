@@ -419,6 +419,7 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	unsigned start_size;
 	unsigned num_blocks=0;
 	unsigned layout_width, layout_height;
+	unsigned longest_length;
 
 	//early exit.
 	if(!blocks||!blocks[0]){
@@ -447,7 +448,11 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	}
 
 	//guess initial font size
-	start_size=fabs(layout_width/strlen(blocks[string_block_longest(blocks)]->text));
+	longest_length=strlen(blocks[string_block_longest(blocks)]->text);
+	if(longest_length<1){
+		longest_length++;
+	}
+	start_size=fabs(layout_width/longest_length);
 	fprintf(stderr, "Guessing initial size %d\n", start_size);
 
 	if(config->force_size==0){
