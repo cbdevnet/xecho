@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <ctype.h>
 #include <math.h>
+#include <errno.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -65,6 +66,7 @@ typedef struct /*_TEXT_BLOCK*/ {
 #define DEFAULT_TEXTCOLOR "black"
 #define DEFAULT_WINCOLOR "white"
 #define DEFAULT_DEBUGCOLOR "red"
+#define STDIN_DATA_CHUNK 512
 
 #include "colorspec.c"
 #include "arguments.c"

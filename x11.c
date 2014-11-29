@@ -222,16 +222,16 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 			);
 			current_size=blocks[i]->size;
 			if(!font){
-				fprintf(stderr, "Failed to load block font (%s, %f)\n", config->font_name, current_size);
+				fprintf(stderr, "Failed to load block font (%s, %d)\n", config->font_name, (int)current_size);
 				return false;
 			}
 		}
 
 		//draw text
-		fprintf(stderr, "Drawing block %d (%s) at layoutcoords %d|%d size %f\n", i, blocks[i]->text, 
+		fprintf(stderr, "Drawing block %d (%s) at layoutcoords %d|%d size %d\n", i, blocks[i]->text, 
 				blocks[i]->layout_x+blocks[i]->extents.x, 
 				blocks[i]->layout_y+blocks[i]->extents.y, 
-				blocks[i]->size);
+				(int)blocks[i]->size);
 
 		XftDrawStringUtf8(xres->drawable, 
 				&(xres->text_color), 
@@ -285,7 +285,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 
 	do{
 		//scale up until out of bounds
-		fprintf(stderr, "Doing block maximization for %dx%d bounds with font %s at %f, directionality %s\n", width, height, font_name, current_size, scale_up?"up":"down");
+		fprintf(stderr, "Doing block maximization for %dx%d bounds with font %s at %d, directionality %s\n", width, height, font_name, (int)current_size, scale_up?"up":"down");
 		
 		//build font
 		font=XftFontOpen(xres->display, xres->screen,
@@ -295,7 +295,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 		);
 
 		if(!font){
-			fprintf(stderr, "Failed to allocate font %s at %f\n", font_name, current_size);
+			fprintf(stderr, "Failed to allocate font %s at %d\n", font_name, (int)current_size);
 			return false;
 		}
 
@@ -319,7 +319,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 			}
 		}
 
-		fprintf(stderr, "At size %f bounding box is %dx%d\n", current_size, bounding_width, bounding_height);
+		fprintf(stderr, "At size %d bounding box is %dx%d\n", (int)current_size, bounding_width, bounding_height);
 		if(bounding_width>width||bounding_height>height){
 			if(scale_up){
 				fprintf(stderr, "Scaled out of window bounds, reversing\n");
@@ -337,7 +337,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 				current_size++;
 			}
 			else{
-				fprintf(stderr, "Size fixed at %f\n", current_size);
+				fprintf(stderr, "Size fixed at %d\n", (int)current_size);
 				done=true;
 			}
 		}
@@ -441,6 +441,7 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 
 	//initialize calculation set
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		fprintf(stderr, "Block %d reporting in\n", i);
 		blocks[i]->calculated=false;
 		num_blocks++;
 	}

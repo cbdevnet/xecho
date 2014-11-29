@@ -3,17 +3,33 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 	struct timeval tv;
 	int maxfd, error;
 	unsigned i;
-	bool abort=false;
+	int abort=0;
 	XEvent event;
 
 	unsigned window_width=0, window_height=0;
+	unsigned display_buffer_length=0, display_buffer_offset;
 
-	TEXTBLOCK** blocks=NULL; //TODO free
+	TEXTBLOCK** blocks=NULL;
+	char* display_buffer=NULL;
 	
 	//prepare initial block buffer
 	if(initial_text){
 		if(!string_blockify(&blocks, initial_text)){
+			fprintf(stderr, "Failed to blockify initial input text\n");
 			return -1;
+		}
+	}
+
+	//copy initial text to stdin buffer
+	if(config->handle_stdin){
+		display_buffer_length=STDIN_DATA_CHUNK+(initial_text?strlen(initial_text):0)+1;
+		display_buffer=calloc(display_buffer_length, sizeof(char));
+		if(!display_buffer){
+			fprintf(stderr, "Failed to allocate memory\n");
+			return -1;
+		}
+		if(initial_text){
+			strncpy(display_buffer, initial_text, strlen(initial_text));
 		}
 	}
 
@@ -34,7 +50,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 						//recalculate size
 						if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
 							fprintf(stderr, "Block calculation failed\n");
-							return -1;
+							abort=-1;
 						}
 					}
 					else{
@@ -48,14 +64,27 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 					XClearWindow(xres->display, xres->main);
 					if(!x11_draw_blocks(config, xres, blocks)){
 						fprintf(stderr, "Failed to draw blocks\n");
-						return -1;
+						abort=-1;
 					}
 					break;
 
 				case KeyPress:
 					switch(event.xkey.keycode){
 						case 24:
-							abort=true;
+							abort=-1;
+							break;
+						case 27:
+							fprintf(stderr, "Redrawing on request\n");
+							if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
+								fprintf(stderr, "Block calculation failed\n");
+								abort=-1;
+							}
+							XClearWindow(xres->display, xres->main);
+							if(!x11_draw_blocks(config, xres, blocks)){
+								fprintf(stderr, "Failed to draw blocks\n");
+								abort=-1;
+							}
+							break;
 						default:
 							fprintf(stderr, "KeyPress %d\n", event.xkey.keycode);
 							break;
@@ -102,18 +131,77 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 		if(error>0){
 			if(FD_ISSET(fileno(stdin), &readfds)){
 				//handle stdin input
-				//TODO read
-				//TODO preprocess
-				//TODO blockify
 				fprintf(stderr, "Data on stdin\n");
-			}
 
+				do{
+					display_buffer_offset=strlen(display_buffer);
+					if(display_buffer_length-display_buffer_offset<STDIN_DATA_CHUNK){
+						//reallocate
+						display_buffer_length+=STDIN_DATA_CHUNK;
+						display_buffer=realloc(display_buffer, display_buffer_length*sizeof(char));
+						if(!display_buffer){
+							fprintf(stderr, "Failed to reallocate display data buffer\n");
+							abort=-1;
+						}
+						fprintf(stderr, "Reallocated display buffer to %d bytes\n", display_buffer_length);
+					}
+
+					//read data
+					error=read(fileno(stdin),
+							display_buffer+display_buffer_offset,
+							display_buffer_length-1-display_buffer_offset
+						  );
+
+					//terminate string
+					if(error>0){
+						display_buffer[display_buffer_offset+error]=0;
+					}
+
+				}while(error>0);
+
+				switch(errno){
+					case EAGAIN:
+						//would block, so done reading
+						//preprocess input data to filter control codes
+						if(!string_preprocess(display_buffer, false)){
+							fprintf(stderr, "Failed to preprocess input text\n");
+							abort=-1;
+						}
+						fprintf(stderr, "Updated display text to\n\"%s\"\n", display_buffer);
+
+						//blockify
+						if(!string_blockify(&blocks, display_buffer)){
+							fprintf(stderr, "Failed to blockify updated input\n");
+							abort=-1;
+						}
+
+						//render new
+						if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
+							fprintf(stderr, "Block calculation failed\n");
+							abort=-1;
+						}
+						XClearWindow(xres->display, xres->main);
+						if(!x11_draw_blocks(config, xres, blocks)){
+							fprintf(stderr, "Failed to draw blocks\n");
+							abort=-1;
+						}
+						break;
+					default:
+						fprintf(stderr, "Failed to read stdin\n");
+						abort=-1;
+				}
+			}
 		}
 		else if(error<0){
 			perror("select");
-			abort=true;
+			abort=-1;
 		}
 	}
 
-	return 0;
+	//free data
+	if(blocks){
+		//TODO free blocks structure
+	}
+
+	return abort;
 }

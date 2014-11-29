@@ -192,7 +192,7 @@ bool args_sane(CFG* config){
 		fprintf(stderr, "Text alignment: %d\n", config->alignment);
 		fprintf(stderr, "Resize lines independently: %s\n", config->independent_resize?"true":"false");
 		fprintf(stderr, "Handle stdin: %s\n", config->handle_stdin?"true":"false");
-		fprintf(stderr, "Forced text size: %f\n", config->force_size);
+		fprintf(stderr, "Forced text size: %d\n", (int)config->force_size);
 		fprintf(stderr, "Text colorspec: %s\n", config->text_color);
 		fprintf(stderr, "Window colorspec: %s\n", config->bg_color);
 		fprintf(stderr, "Debug colorspec: %s\n", config->debug_color);
