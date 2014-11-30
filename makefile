@@ -10,8 +10,11 @@ clean:
 	rm xecho
 	rm xecho_old
 
-test:
+displaytest:
 	valgrind -v --leak-check=full --track-origins=yes --show-reachable=yes ./xecho -vv qmt
+
+updatetest:
+	valgrind --track-origins=yes --leak-check=full ./xecho -stdin -padding 10 -size 20 -align nw
 
 xhello:
 	$(CC) -I/usr/include/freetype2 -lXft -o xhello xhello.c

@@ -269,10 +269,11 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 	double current_size=1;
 	bool done=false;
 	bool scale_up=true;
-	unsigned done_block;
+	unsigned done_block, longest_length;
 
 	//FIXME this function is where most time is wasted.
-
+	
+	//count blocks
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
 	}
 
@@ -282,15 +283,15 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 		return true;
 	}
 
-	//find start size
+	//guess initial font size
 	//sizes in sets to be maximized are always the same,
 	//since any pass modifies all active blocks to the same size
-	for(i=0;blocks[i]&&blocks[i]->active;i++){
-		if(!(blocks[i]->calculated)){
-			current_size=blocks[i]->size;
-			break;
-		}
+	longest_length=strlen(blocks[string_block_longest(blocks)]->text);
+	if(longest_length<1){
+		longest_length++;
 	}
+	current_size=fabs(width/longest_length);
+	fprintf(stderr, "Guessing initial size %d\n", (int)current_size);
 
 	do{
 		//scale up until out of bounds
@@ -425,10 +426,8 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	unsigned i;
 	XftFont* font=NULL;
 
-	unsigned start_size;
 	unsigned num_blocks=0;
 	unsigned layout_width, layout_height;
-	unsigned longest_length;
 
 	//early exit.
 	if(!blocks||!blocks[0]){
@@ -455,19 +454,8 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 		num_blocks++;
 	}
 
-	//guess initial font size
-	longest_length=strlen(blocks[string_block_longest(blocks)]->text);
-	if(longest_length<1){
-		longest_length++;
-	}
-	start_size=fabs(layout_width/longest_length);
-	fprintf(stderr, "Guessing initial size %d\n", start_size);
-
 	if(config->force_size==0){
 		//do binary search for match size
-		blocks[0]->size=start_size;
-
-		//do multiple passes if flag is set
 		i=0;
 		do{
 			fprintf(stderr, "Running maximizer for pass %d (%d blocks)\n", i, num_blocks);
@@ -476,6 +464,7 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 			}
 			i++;
 		}
+		//do multiple passes if flag is set
 		while(config->independent_resize&&i<num_blocks);
 	}
 	else{

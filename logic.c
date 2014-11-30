@@ -135,6 +135,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 
 				do{
 					display_buffer_offset=strlen(display_buffer);
+					fprintf(stderr, "Display buffer is %d long, offset is %d\n", display_buffer_length, display_buffer_offset);
 					if(display_buffer_length-display_buffer_offset<STDIN_DATA_CHUNK){
 						//reallocate
 						display_buffer_length+=STDIN_DATA_CHUNK;

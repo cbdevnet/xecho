@@ -116,7 +116,7 @@ bool string_blockify(TEXTBLOCK*** blocks, char* input){
 			
 			for(;num_blocks<=blocks_needed;num_blocks++){
 				fprintf(stderr, "NULLing block pointer %d\n", num_blocks);
-				blocks[num_blocks]=NULL;
+				(*blocks)[num_blocks]=NULL;
 			}
 
 			fprintf(stderr, "After alloc session, now at %d slots\n", num_blocks);
