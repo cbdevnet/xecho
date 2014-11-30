@@ -149,7 +149,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	
 	//set fullscreen mode
 	wm_state_fullscreen=XInternAtom(res->display, "_NET_WM_STATE_FULLSCREEN", False);
-	XChangeProperty(res->display, res->main, XInternAtom(res->display, "_NET_WM_STATE", True), XA_ATOM, 32, PropModeReplace, (unsigned char*) &wm_state_fullscreen, 1);
+	XChangeProperty(res->display, res->main, XInternAtom(res->display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char*) &wm_state_fullscreen, 1);
 	
 	//make xft drawable from window
 	//FIXME visuals & colormaps?
