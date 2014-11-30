@@ -269,7 +269,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 	double current_size=1;
 	bool done=false;
 	bool scale_up=true;
-	unsigned done_block, longest_length;
+	unsigned done_block, longest_block;
 
 	//FIXME this function is where most time is wasted.
 	
@@ -286,11 +286,14 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 	//guess initial font size
 	//sizes in sets to be maximized are always the same,
 	//since any pass modifies all active blocks to the same size
-	longest_length=strlen(blocks[string_block_longest(blocks)]->text);
-	if(longest_length<1){
-		longest_length++;
+	longest_block=string_block_longest(blocks);
+	if(blocks[longest_block]->size==0){
+		//calculate
+		current_size=fabs(width/(strlen(blocks[longest_block]->text)>0)?strlen(blocks[longest_block]->text):0);
 	}
-	current_size=fabs(width/longest_length);
+	else{
+		current_size=blocks[longest_block]->size;
+	}
 	fprintf(stderr, "Guessing initial size %d\n", (int)current_size);
 
 	do{
