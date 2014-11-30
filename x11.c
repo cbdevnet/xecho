@@ -277,7 +277,8 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 	}
 
 	//no blocks, bail out
-	if(i<1){
+	if(i<1||width<1||height<1){
+		fprintf(stderr, "Maximizer bailing out, nothing to do\n");
 		return true;
 	}
 

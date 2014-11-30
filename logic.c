@@ -152,6 +152,8 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							display_buffer_length-1-display_buffer_offset
 						  );
 
+					fprintf(stderr, "Read %d bytes from stdin\n", error);
+
 					//terminate string
 					if(error>0){
 						display_buffer[display_buffer_offset+error]=0;
@@ -159,6 +161,11 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 
 				}while(error>0);
 
+				//check if stdin was closed
+				if(error==0){
+					config->handle_stdin=false;
+				}
+				
 				switch(errno){
 					case EAGAIN:
 						//would block, so done reading
@@ -204,7 +211,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 	}
 	
 	if(blocks){
-		//TODO free blocks structure
+		//free blocks structure
 		for(i=0;blocks[i];i++){
 			if(blocks[i]->text){
 				free(blocks[i]->text);
