@@ -25,10 +25,13 @@ typedef enum /*_ALIGNMENT*/ {
 typedef struct /*_CFG_ARGS*/ {
 	unsigned verbosity;
 	unsigned padding;
+	unsigned line_spacing;
+	unsigned max_size;
 	TEXT_ALIGN alignment;
 	bool independent_resize;
 	bool handle_stdin;
 	bool debug_boxes;
+	bool disable_text;
 	double force_size;
 	char* text_color;
 	char* bg_color;

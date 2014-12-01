@@ -208,6 +208,11 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 		}
 	}
 
+	//draw boxes only
+	if(config->disable_text){
+		return true;
+	}
+
 	//draw all blocks
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
 		//load font
@@ -263,7 +268,7 @@ void x11_block_bounds(XRESOURCES* xres, TEXTBLOCK* block, XftFont* font){
 }
 
 
-bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height, char* font_name){
+bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigned width, unsigned height){
 	unsigned i, bounding_width, bounding_height;
 	XftFont* font=NULL;
 	double current_size=1;
@@ -288,8 +293,14 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 	//since any pass modifies all active blocks to the same size
 	longest_block=string_block_longest(blocks);
 	if(blocks[longest_block]->size==0){
-		//calculate
-		current_size=fabs(width/(strlen(blocks[longest_block]->text)>0)?strlen(blocks[longest_block]->text):0);
+		if(config->max_size>0){
+			//use max size as initial test
+			current_size=config->max_size;
+		}
+		else{
+			//educated guess
+			current_size=fabs(width/(strlen(blocks[longest_block]->text)>0)?strlen(blocks[longest_block]->text):0);
+		}
 	}
 	else{
 		current_size=blocks[longest_block]->size;
@@ -298,17 +309,17 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 
 	do{
 		//scale up until out of bounds
-		fprintf(stderr, "Doing block maximization for %dx%d bounds with font %s at %d, directionality %s\n", width, height, font_name, (int)current_size, scale_up?"up":"down");
+		fprintf(stderr, "Doing block maximization for %dx%d bounds with font %s at %d, directionality %s\n", width, height, config->font_name, (int)current_size, scale_up?"up":"down");
 		
 		//build font
 		font=XftFontOpen(xres->display, xres->screen,
-				XFT_FAMILY, XftTypeString, font_name,
+				XFT_FAMILY, XftTypeString, config->font_name,
 				XFT_PIXEL_SIZE, XftTypeDouble, current_size,
 				NULL
 		);
 
 		if(!font){
-			fprintf(stderr, "Failed to allocate font %s at %d\n", font_name, (int)current_size);
+			fprintf(stderr, "Failed to allocate font %s at %d\n", config->font_name, (int)current_size);
 			return false;
 		}
 
@@ -346,15 +357,22 @@ bool x11_maximize_blocks(XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, u
 		}
 		else{
 			if(scale_up){
-				fprintf(stderr, "Inside bounds, increasing font size\n");
-				current_size++;
+				if(config->max_size>0&&current_size>=config->max_size){
+					fprintf(stderr, "Reached max size, bailing out\n");
+					done=true;
+				}
+				else{
+					fprintf(stderr, "Inside bounds, increasing font size\n");
+					current_size++;
+				}
 			}
 			else{
-				fprintf(stderr, "Size fixed at %d\n", (int)current_size);
 				done=true;
 			}
 		}
 	}while(!done);
+
+	fprintf(stderr, "Size fixed at %d\n", (int)current_size);
 
 	//set active to false for longest
 	done_block=string_block_longest(blocks);
@@ -370,6 +388,10 @@ bool x11_align_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigne
 
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
 		total_height+=blocks[i]->extents.height;
+	}
+
+	if(i>0){
+		total_height+=config->line_spacing*(i-1);
 	}
 
 	//FIXME this might underflow in some cases
@@ -397,27 +419,38 @@ bool x11_align_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigne
 		}
 
 		//align y axis
+		//FIXME use line_spacing here
 		switch(config->alignment){
 			case ALIGN_WEST:
 			case ALIGN_EAST:
 			case ALIGN_CENTER:
 				//centered
-				blocks[i]->layout_y=((height-total_height)/2)+current_height;
-				current_height+=blocks[i]->extents.height;
+				blocks[i]->layout_y=((height-total_height)/2)
+							+current_height
+							+((current_height>0)?config->line_spacing:0);
+				current_height+=blocks[i]->extents.height
+						+((current_height>0)?config->line_spacing:0);
 				break;
 			case ALIGN_NORTHWEST:
 			case ALIGN_NORTH:
 			case ALIGN_NORTHEAST:
 				//top
-				blocks[i]->layout_y=(config->padding)+current_height;
-				current_height+=blocks[i]->extents.height;
+				blocks[i]->layout_y=(config->padding)
+							+current_height
+							+((current_height>0)?config->line_spacing:0);
+				current_height+=blocks[i]->extents.height
+						+((current_height>0)?config->line_spacing:0);
 				break;
 			case ALIGN_SOUTHWEST:
 			case ALIGN_SOUTH:
 			case ALIGN_SOUTHEAST:
 				//bottom
-				blocks[i]->layout_y=height-total_height-(config->padding);
-				total_height-=blocks[i]->extents.height;
+				blocks[i]->layout_y=height-total_height-(config->padding)
+						+((current_height>0)?config->line_spacing:0);
+				total_height-=(blocks[i]->extents.height
+						+((current_height>0)?config->line_spacing:0));
+				current_height+=blocks[i]->extents.height
+						+((current_height>0)?config->line_spacing:0);
 				break;
 		}
 	}
@@ -462,7 +495,7 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 		i=0;
 		do{
 			fprintf(stderr, "Running maximizer for pass %d (%d blocks)\n", i, num_blocks);
-			if(!x11_maximize_blocks(xres, blocks, layout_width, layout_height, config->font_name)){
+			if(!x11_maximize_blocks(xres, config, blocks, layout_width, layout_height)){
 				return false;
 			}
 			i++;

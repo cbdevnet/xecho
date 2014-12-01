@@ -11,6 +11,24 @@ int args_parse(CFG* config, int argc, char** argv){
 				return -1;
 			}
 		}
+		else if(!strcmp(argv[i], "-linespacing")){
+			if(++i<argc){
+				config->line_spacing=strtoul(argv[i], NULL, 10);
+			}
+			else{
+				fprintf(stderr, "No parameter for line spacing\n");
+				return -1;
+			}
+		}
+		else if(!strcmp(argv[i], "-maxsize")){
+			if(++i<argc){
+				config->max_size=strtoul(argv[i], NULL, 10);
+			}
+			else{
+				fprintf(stderr, "No parameter for max size\n");
+				return -1;
+			}
+		}
 		else if(!strcmp(argv[i], "-align")){
 			if(++i<argc){
 				switch(argv[i][0]){
@@ -73,6 +91,9 @@ int args_parse(CFG* config, int argc, char** argv){
 		}
 		else if(!strcmp(argv[i], "-independent-lines")){
 			config->independent_resize=true;
+		}
+		else if(!strcmp(argv[i], "-notext")){
+			config->disable_text=true;
 		}
 		else if(!strcmp(argv[i], "-fc")){
 			if(++i<argc&&!(config->text_color)){
@@ -189,9 +210,13 @@ bool args_sane(CFG* config){
 		fprintf(stderr, "Config summary\n");
 		fprintf(stderr, "Verbosity level: %d\n", config->verbosity);
 		fprintf(stderr, "Text padding: %d\n", config->padding);
+		fprintf(stderr, "Line spacing: %d\n", config->line_spacing);
+		fprintf(stderr, "Maximum size: %d\n", config->max_size);
 		fprintf(stderr, "Text alignment: %d\n", config->alignment);
 		fprintf(stderr, "Resize lines independently: %s\n", config->independent_resize?"true":"false");
 		fprintf(stderr, "Handle stdin: %s\n", config->handle_stdin?"true":"false");
+		fprintf(stderr, "Draw debug boxes: %s\n", config->debug_boxes?"true":"false");
+		fprintf(stderr, "Disable text draw: %s\n", config->disable_text?"true":"false");
 		fprintf(stderr, "Forced text size: %d\n", (int)config->force_size);
 		fprintf(stderr, "Text colorspec: %s\n", config->text_color);
 		fprintf(stderr, "Window colorspec: %s\n", config->bg_color);

@@ -9,10 +9,13 @@ int main(int argc, char** argv){
 	CFG config={
 		0,		//verbosity
 		0, 		//padding
+		0,		//line spacing
+		0,		//max size
 		ALIGN_CENTER, 	//alignment
 		false, 		//independent resize
 		false, 		//handle stdin
 		false,		//draw debug boxes
+		false,		//disable text drawing
 		0, 		//forced size
 		NULL,	 	//text color
 		NULL,	 	//background color
