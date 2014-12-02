@@ -362,6 +362,11 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 			}
 		}
 
+		if(current_size!=0&&(bounding_width<1||bounding_height<1)){
+			fprintf(stderr, "Block %d calculation seems problematic, bailing out\n", i);
+			break;
+		}
+
 		fprintf(stderr, "At size %d bounding box is %dx%d\n", (int)current_size, bounding_width, bounding_height);
 		if(bounding_width>width||bounding_height>height){
 			if(scale_up){
