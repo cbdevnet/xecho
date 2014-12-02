@@ -1,2 +1,3 @@
-stdin reading
-Y axis alignment
+use binary search instead of linear search for maximizer
+run maximizer in separate thread
+handle static size fonts
