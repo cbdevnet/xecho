@@ -66,7 +66,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 				
 				case Expose:
 					//draw here
-					fprintf(stderr, "Window exposed, initiating redraw\n");
+					fprintf(stderr, "Expose message, initiating redraw\n");
 					if(!config->double_buffer){
 						fprintf(stderr, "Clearing window\n");
 						XClearWindow(xres->display, xres->main);

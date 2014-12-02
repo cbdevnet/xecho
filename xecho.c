@@ -108,5 +108,7 @@ int main(int argc, char** argv){
 		free(args_text);
 	}
 
+	fprintf(stderr, "xecho shutdown ok\n");
+
 	return 0;
 }

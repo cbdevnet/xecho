@@ -39,8 +39,10 @@ bool string_preprocess(char* input, bool handle_escapes){
 				//is handled by blockify
 				break;
 			case '\f':
-				//reset text buffer
-				text_pos=-1; //is increased directly below
+				//reset text buffer (if data is present)
+				if(input[i+1]){
+					text_pos=-1; //is increased directly below
+				}
 				break;
 			case '\b':
 				//TODO delete one character back, but not over newline
