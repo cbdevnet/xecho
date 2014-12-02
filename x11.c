@@ -79,6 +79,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	XSetWindowAttributes window_attributes;
 	unsigned width, height;
 	Atom wm_state_fullscreen;
+	int xdbe_major, xdbe_minor;
 
 	//allocate some structures
 	XSizeHints* size_hints=XAllocSizeHints();
@@ -100,6 +101,14 @@ bool x11_init(XRESOURCES* res, CFG* config){
 		XFree(class_hints);
 		return false;
 	}
+
+	if(config->double_buffer){
+		config->double_buffer=(XdbeQueryExtension(res->display, &xdbe_major, &xdbe_minor)!=0);
+	}
+	else{
+		config->double_buffer=false;
+	}
+	fprintf(stderr, "Double buffering %s\n", config->double_buffer?"enabled":"disabled");
 	
 	res->screen=DefaultScreen(res->display);
 	root=RootWindow(res->display, res->screen);
@@ -151,9 +160,14 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	wm_state_fullscreen=XInternAtom(res->display, "_NET_WM_STATE_FULLSCREEN", False);
 	XChangeProperty(res->display, res->main, XInternAtom(res->display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char*) &wm_state_fullscreen, 1);
 	
+	//allocate back drawing buffer
+	if(config->double_buffer){
+		res->back_buffer=XdbeAllocateBackBufferName(res->display, res->main, XdbeBackground);
+	}
+
 	//make xft drawable from window
 	//FIXME visuals & colormaps?
-	res->drawable=XftDrawCreate(res->display, res->main, DefaultVisual(res->display, res->screen), DefaultColormap(res->display, res->screen)); 
+	res->drawable=XftDrawCreate(res->display, (config->double_buffer?res->back_buffer:res->main), DefaultVisual(res->display, res->screen), DefaultColormap(res->display, res->screen));
 
 	if(!res->drawable){
 		fprintf(stderr, "Failed to allocate drawable\n");
@@ -299,7 +313,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		}
 		else{
 			//educated guess
-			current_size=fabs(width/(strlen(blocks[longest_block]->text)>0)?strlen(blocks[longest_block]->text):0);
+			current_size=fabs(width/((strlen(blocks[longest_block]->text)>0)?strlen(blocks[longest_block]->text):1));
 		}
 	}
 	else{
@@ -332,6 +346,11 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		}
 
 		XftFontClose(xres->display, font);
+
+		//if(blocks[i]->extents.height==0||blocks[i]->extents.width==0){
+		//	fprintf(stderr, "Block %d seems to scale indefinitely, skipping\n", i);
+		//	continue;
+		//}
 		
 		//build bounding box
 		bounding_width=0;

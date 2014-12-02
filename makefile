@@ -1,7 +1,7 @@
 .PHONY: all test xhello clean
 
 all:
-	$(CC) -g -Wall -I/usr/include/freetype2 -lXft -lm -o xecho xecho.c
+	$(CC) -g -Wall -I/usr/include/freetype2 -lXft -lm -lXext -o xecho xecho.c
 
 old:
 	$(CC) -g -Wall -I/usr/include/freetype2 -lXft -lm -o xecho_old xecho_old.c

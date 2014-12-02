@@ -9,6 +9,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <X11/Xft/Xft.h>
+#include <X11/extensions/Xdbe.h>
 
 typedef enum /*_ALIGNMENT*/ {
 	ALIGN_CENTER,
@@ -32,6 +33,7 @@ typedef struct /*_CFG_ARGS*/ {
 	bool handle_stdin;
 	bool debug_boxes;
 	bool disable_text;
+	bool double_buffer;
 	double force_size;
 	char* text_color;
 	char* bg_color;
@@ -48,6 +50,7 @@ typedef struct /*_XDATA*/ {
 	int screen;
 	Display* display;
 	Window main;
+	XdbeBackBuffer back_buffer;
 	XftDraw* drawable;
 	XftColor text_color;
 	XftColor bg_color;

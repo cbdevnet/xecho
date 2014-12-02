@@ -27,6 +27,7 @@ eg.: ./xecho -bc blue -tc yellow -- --stdin is cool!
 Build prerequisites:
 	- libxft-dev
 	- libx11-dev
+	- libxext-dev
 	- A C compiler (tcc does the trick)
 
 To compile, simply run make.

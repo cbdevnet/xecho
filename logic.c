@@ -5,6 +5,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 	unsigned i;
 	int abort=0;
 	XEvent event;
+	XdbeSwapInfo swap_info;
 
 	unsigned window_width=0, window_height=0;
 	unsigned display_buffer_length=0, display_buffer_offset;
@@ -60,12 +61,22 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 				
 				case Expose:
 					//draw here
-					fprintf(stderr, "Window exposed, clearing and redrawing\n");
-					XClearWindow(xres->display, xres->main);
+					fprintf(stderr, "Window exposed, initiating redraw\n");
+					if(!config->double_buffer){
+						fprintf(stderr, "Clearing window\n");
+						XClearWindow(xres->display, xres->main);
+					}
 					if(!x11_draw_blocks(config, xres, blocks)){
 						fprintf(stderr, "Failed to draw blocks\n");
 						abort=-1;
 					}
+					if(config->double_buffer){
+						fprintf(stderr, "Swapping buffers\n");
+						swap_info.swap_window=xres->main;
+						swap_info.swap_action=XdbeBackground;
+						XdbeSwapBuffers(xres->display, &swap_info, 1);
+					}
+
 					break;
 
 				case KeyPress:
@@ -79,11 +90,8 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 								fprintf(stderr, "Block calculation failed\n");
 								abort=-1;
 							}
-							XClearWindow(xres->display, xres->main);
-							if(!x11_draw_blocks(config, xres, blocks)){
-								fprintf(stderr, "Failed to draw blocks\n");
-								abort=-1;
-							}
+							event.type=Expose;
+							XSendEvent(xres->display, xres->main, False, 0, &event);
 							break;
 						default:
 							fprintf(stderr, "KeyPress %d\n", event.xkey.keycode);
@@ -110,7 +118,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 		//prepare select data
 		FD_ZERO(&readfds);
 		maxfd=-1;
-		tv.tv_sec=10;
+		tv.tv_sec=1;
 		tv.tv_usec=0;
 
 		for(i=0;i<xres->xfds.size;i++){
@@ -183,16 +191,15 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							abort=-1;
 						}
 
-						//render new
+						//recalculate
 						if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
 							fprintf(stderr, "Block calculation failed\n");
 							abort=-1;
 						}
-						XClearWindow(xres->display, xres->main);
-						if(!x11_draw_blocks(config, xres, blocks)){
-							fprintf(stderr, "Failed to draw blocks\n");
-							abort=-1;
-						}
+						
+						//update display
+						event.type=Expose;
+						XSendEvent(xres->display, xres->main, False, 0, &event);
 						break;
 					default:
 						fprintf(stderr, "Failed to read stdin\n");

@@ -16,21 +16,23 @@ int main(int argc, char** argv){
 		false, 		//handle stdin
 		false,		//draw debug boxes
 		false,		//disable text drawing
+		true,		//use double buffering
 		0, 		//forced size
 		NULL,	 	//text color
 		NULL,	 	//background color
 		NULL,		//debug color name
-		NULL		//font name
+		NULL,		//font name
 	};
 	XRESOURCES xres={
-		0,
-		NULL,
-		0,
-		NULL,
-		{},
-		{},
-		{},
-		{NULL, 0}		
+		0,		//screen
+		NULL,		//display
+		0,		//window
+		0,		//back buffer
+		NULL,		//xft drawable
+		{},		//text color
+		{},		//bg color
+		{},		//debug color
+		{NULL, 0}	//xfd set
 	};
 	int args_end;
 	unsigned text_length, i;

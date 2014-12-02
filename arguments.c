@@ -95,6 +95,9 @@ int args_parse(CFG* config, int argc, char** argv){
 		else if(!strcmp(argv[i], "-notext")){
 			config->disable_text=true;
 		}
+		else if(!strcmp(argv[i], "-disable-doublebuffer")){
+			config->double_buffer=false;
+		}
 		else if(!strcmp(argv[i], "-fc")){
 			if(++i<argc&&!(config->text_color)){
 				config->text_color=calloc(strlen(argv[i])+1, sizeof(char));
