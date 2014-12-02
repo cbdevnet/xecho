@@ -53,6 +53,11 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							fprintf(stderr, "Block calculation failed\n");
 							abort=-1;
 						}
+						
+						if(config->double_buffer){
+							//update drawable
+							XftDrawChange(xres->drawable, xres->back_buffer);
+						}
 					}
 					else{
 						fprintf(stderr, "Configuration not changed, ignoring\n");
