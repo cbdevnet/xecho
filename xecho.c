@@ -1,7 +1,25 @@
 #include "xecho.h"
 
 int usage(char* fn){
-	printf("Usage info for %s\n", fn);
+	printf("xecho - Render text to X\n\n");
+	printf("Usage: %s <arguments> <text>\n", fn);
+	printf("Recognized options:\n");
+	printf("\t--\t\t\t\tStop argument parsing,\n\t\t\t\t\ttreat all following arguments as text\n\n");
+	printf("\t-font <fontspec>\t\tSelect font by FontConfig name\n\n");
+	printf("\t-fc <colorspec>\t\t\tSet text color by name or HTML code\n\n");
+	printf("\t-bc <colorspec>\t\t\tSet background color by name or code\n\n");
+	printf("\t-size <n>\t\t\tRender at font size n\n\n");
+	printf("\t-maxsize <n>\t\t\tLimit font size to n at max\n\n");
+	printf("\t-align [n|ne|e|se|s|sw|w|nw]\tAlign text\n\n");
+	printf("\t-padding <n>\t\t\tPad text by n pixels\n\n");
+	printf("\t-linespacing <n>\t\tPad lines by n pixels\n\n");
+	printf("Recognized flags:\n");
+	printf("\t-stdin\t\t\t\tUpdate text from stdin,\n\t\t\t\t\t\\f (Form feed) clears text,\n\t\t\t\t\t\\r (Carriage return) clears current line\n\n");
+	printf("\t-independent-lines\t\tResize every line individually\n\n");
+	printf("\t-debugboxes\t\t\tDraw debug boxes\n\n");
+	printf("\t-disable-text\t\t\tDo not render text at all.\n\t\t\t\t\tMight be useful for playing tetris.\n\n");
+	printf("\t-disable-doublebuffer\t\tDo not use XDBE\n\n");
+	printf("\t-v[v[v]]\t\t\tIncrease output verbosity\n\n");
 	return 1;
 }
 

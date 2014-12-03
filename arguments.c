@@ -92,7 +92,7 @@ int args_parse(CFG* config, int argc, char** argv){
 		else if(!strcmp(argv[i], "-independent-lines")){
 			config->independent_resize=true;
 		}
-		else if(!strcmp(argv[i], "-notext")){
+		else if(!strcmp(argv[i], "-disable-text")){
 			config->disable_text=true;
 		}
 		else if(!strcmp(argv[i], "-disable-doublebuffer")){
