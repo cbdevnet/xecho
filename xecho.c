@@ -53,7 +53,7 @@ int main(int argc, char** argv){
 
 	//set up x11 display
 	if(!x11_init(&xres, &config)){
-		x11_cleanup(&xres);
+		x11_cleanup(&xres, &config);
 		args_cleanup(&config);
 		return usage(argv[0]);
 	}
@@ -81,7 +81,7 @@ int main(int argc, char** argv){
 		//preprocess
 		if(!string_preprocess(args_text, true)){
 			printf("Failed to preprocess input text\n");
-			x11_cleanup(&xres);
+			x11_cleanup(&xres, &config);
 			args_cleanup(&config);
 			return usage(argv[0]);
 		}
@@ -101,7 +101,7 @@ int main(int argc, char** argv){
 	xecho(&config, &xres, args_text);
 
 	//clear data
-	x11_cleanup(&xres);
+	x11_cleanup(&xres, &config);
 	args_cleanup(&config);
 
 	if(args_text){

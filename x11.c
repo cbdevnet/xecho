@@ -190,7 +190,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	return true;
 }
 
-void x11_cleanup(XRESOURCES* xres){
+void x11_cleanup(XRESOURCES* xres, CFG* config){
 	if(!(xres->display)){
 		return;
 	}
@@ -200,6 +200,9 @@ void x11_cleanup(XRESOURCES* xres){
 	XftColorFree(xres->display, DefaultVisual(xres->display, xres->screen), DefaultColormap(xres->display, xres->screen), &(xres->debug_color));
 	if(xres->drawable){
 		XftDrawDestroy(xres->drawable);
+	}
+	if(config->double_buffer){
+		XdbeDeallocateBackBufferName(xres->display, xres->back_buffer);
 	}
 	XCloseDisplay(xres->display);
 	xfd_free(&(xres->xfds));
