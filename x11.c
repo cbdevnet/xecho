@@ -283,7 +283,7 @@ void x11_block_bounds(XRESOURCES* xres, TEXTBLOCK* block, XftFont* font){
 
 
 bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigned width, unsigned height){
-	unsigned i, bounding_width, bounding_height;
+	unsigned i, bounding_width, bounding_height, num_blocks=0;
 	XftFont* font=NULL;
 	double current_size=1;
 	bool done=false;
@@ -294,10 +294,13 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 	
 	//count blocks
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		if(!blocks[i]->calculated){
+			num_blocks++;
+		}
 	}
 
 	//no blocks, bail out
-	if(i<1||width<1||height<1){
+	if(num_blocks<1||width<1||height<1){
 		fprintf(stderr, "Maximizer bailing out, nothing to do\n");
 		return true;
 	}
@@ -317,6 +320,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		}
 	}
 	else{
+		//use last known size as base
 		current_size=blocks[longest_block]->size;
 	}
 	fprintf(stderr, "Guessing initial size %d\n", (int)current_size);
@@ -342,16 +346,17 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 			if(!blocks[i]->calculated){
 				x11_block_bounds(xres, blocks[i], font);
 				blocks[i]->size=current_size;
+				
+				//ignore empty blocks
+				if(blocks[i]->text[0]==0){
+					fprintf(stderr, "Marking empty block %d as already calculated\n", i);
+					blocks[i]->calculated=true;
+				}
 			}
 		}
 
 		XftFontClose(xres->display, font);
 
-		//if(blocks[i]->extents.height==0||blocks[i]->extents.width==0){
-		//	fprintf(stderr, "Block %d seems to scale indefinitely, skipping\n", i);
-		//	continue;
-		//}
-		
 		//build bounding box
 		bounding_width=0;
 		bounding_height=0;
@@ -363,7 +368,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		}
 
 		if(current_size!=0&&(bounding_width<1||bounding_height<1)){
-			fprintf(stderr, "Block %d calculation seems problematic, bailing out\n", i);
+			fprintf(stderr, "Bounding box is empty, bailing out\n");
 			break;
 		}
 
@@ -487,32 +492,34 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	XftFont* font=NULL;
 
 	unsigned num_blocks=0;
-	unsigned layout_width, layout_height;
+	unsigned layout_width=width, layout_height=height;
 
 	//early exit.
 	if(!blocks||!blocks[0]){
 		return true;
 	}
 
-	//calculate layout volume
-	if(width<config->padding){
-		layout_width=width;
-	}
-	else{
-		layout_width=width-config->padding;
-	}
-	if(height<config->padding){
-		layout_height=height;
-	}
-	else{
-		layout_height=height-config->padding;
-	}
-
 	//initialize calculation set
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		fprintf(stderr, "Block %d: %s\n", i, blocks[i]->text);
 		blocks[i]->calculated=false;
 		num_blocks++;
 	}
+
+	//calculate layout volume
+	if(width>(2*config->padding)){
+		layout_width-=2*config->padding;
+	}
+	if(height>(2*config->padding)){
+		fprintf(stderr, "Subtracting %d pixels for height padding\n", config->padding);
+		layout_height-=2*config->padding;
+	}
+	if(num_blocks>1&&(((num_blocks-1)*(config->line_spacing)<layout_height))){
+		fprintf(stderr, "Subtracting %d pixels for linespacing\n", (num_blocks-1)*config->line_spacing);
+		layout_height-=(num_blocks-1)*config->line_spacing;
+	}
+
+	fprintf(stderr, "Window volume %dx%d, layout volume %dx%d\n", width, height, layout_width, layout_height);
 
 	if(config->force_size==0){
 		//do binary search for match size
