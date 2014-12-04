@@ -3,7 +3,7 @@ It takes input from the commandline or via stdin and
 tries to render it at the largest font size the window
 permits.
 
-Additional options allow fixing customizing the display
+Additional options allow customizing the display
 for special cases, such as signage or status displays.
 
 xecho aims to have minimal dependencies and bloat,
@@ -53,6 +53,17 @@ Control characters are handled as follows
 	\f		Clears display
 	\r		Clears current line
 	\b		Backspace
+
+Usage examples:
+
+	while :; do printf "\f%s" "`date`" \
+		&& sleep 1; done | ./xecho -stdin
+
+	Displays the current date updated by every second.
+	The output of `date` is handled by printf to avoid
+	a race condition where the pipe is flushed after
+	the form feed, but before date has printed its
+	output, thus leading to flicker.
 
 Build prerequisites:
 	- libxft-dev
