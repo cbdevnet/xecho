@@ -42,14 +42,13 @@ and <alignspec> is one of n|ne|e|se|s|sw|w|nw
 
 Options must be given before a text argument starts.
 Command line option parsing can be stopped with --,
-eg.: ./xecho -bc blue -tc yellow -- -stdin is cool!
+eg.: ./xecho -bc blue -fc yellow -- -stdin is cool!
 
 Text passed via the command line is scanned once for
 control character encodings (\n and \\), which
 are replaced by their ASCII codepoints.
 
 Control characters are handled as follows
-
 	\n		Starts new line
 	\f		Clears display
 	\r		Clears current line
