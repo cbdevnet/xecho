@@ -41,12 +41,12 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 			//handle events
 			switch(event.type){
 				case ConfigureNotify:
-					fprintf(stderr, "Window configured to %dx%d\n", event.xconfigure.width, event.xconfigure.height);
+					errlog(config, LOG_INFO, "Window configured to %dx%d\n", event.xconfigure.width, event.xconfigure.height);
 					if(window_width!=event.xconfigure.width||window_height!=event.xconfigure.height){
 						window_width=event.xconfigure.width;
 						window_height=event.xconfigure.height;
 
-						fprintf(stderr, "Recalculating blocks\n");
+						errlog(config, LOG_DEBUG, "Recalculating blocks\n");
 
 						//recalculate size
 						if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
@@ -60,15 +60,15 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 						}
 					}
 					else{
-						fprintf(stderr, "Configuration not changed, ignoring\n");
+						errlog(config, LOG_DEBUG, "Configuration not changed, ignoring\n");
 					}
 					break;
 				
 				case Expose:
 					//draw here
-					fprintf(stderr, "Expose message, initiating redraw\n");
+					errlog(config, LOG_INFO, "Expose message, initiating redraw\n");
 					if(!config->double_buffer){
-						fprintf(stderr, "Clearing window\n");
+						errlog(config, LOG_DEBUG, "Clearing window\n");
 						XClearWindow(xres->display, xres->main);
 					}
 					if(!x11_draw_blocks(config, xres, blocks)){
@@ -76,7 +76,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 						abort=-1;
 					}
 					if(config->double_buffer){
-						fprintf(stderr, "Swapping buffers\n");
+						errlog(config, LOG_DEBUG, "Swapping buffers\n");
 						swap_info.swap_window=xres->main;
 						swap_info.swap_action=XdbeBackground;
 						XdbeSwapBuffers(xres->display, &swap_info, 1);
@@ -90,7 +90,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							abort=-1;
 							break;
 						case 27:
-							fprintf(stderr, "Redrawing on request\n");
+							errlog(config, LOG_INFO, "Redrawing on request\n");
 							if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
 								fprintf(stderr, "Block calculation failed\n");
 								abort=-1;
@@ -99,17 +99,17 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							XSendEvent(xres->display, xres->main, False, 0, &event);
 							break;
 						default:
-							fprintf(stderr, "KeyPress %d\n", event.xkey.keycode);
+							errlog(config, LOG_DEBUG, "KeyPress %d\n", event.xkey.keycode);
 							break;
 					}
 					break;
 
 				case ClientMessage:
-					fprintf(stderr, "Client message\n");
+					errlog(config, LOG_INFO, "Client message\n");
 					break;
 
 				default:
-					fprintf(stderr, "Unhandled X event\n");
+					errlog(config, LOG_INFO, "Unhandled X event\n");
 					break;
 			}
 		}
@@ -144,11 +144,11 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 		if(error>0){
 			if(FD_ISSET(fileno(stdin), &readfds)){
 				//handle stdin input
-				fprintf(stderr, "Data on stdin\n");
+				errlog(config, LOG_INFO, "Data on stdin\n");
 
 				do{
 					display_buffer_offset=strlen(display_buffer);
-					fprintf(stderr, "Display buffer is %d long, offset is %d\n", display_buffer_length, display_buffer_offset);
+					errlog(config, LOG_DEBUG, "Display buffer is %d long, offset is %d\n", display_buffer_length, display_buffer_offset);
 					if(display_buffer_length-display_buffer_offset<STDIN_DATA_CHUNK){
 						//reallocate
 						display_buffer_length+=STDIN_DATA_CHUNK;
@@ -157,7 +157,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							fprintf(stderr, "Failed to reallocate display data buffer\n");
 							abort=-1;
 						}
-						fprintf(stderr, "Reallocated display buffer to %d bytes\n", display_buffer_length);
+						errlog(config, LOG_DEBUG, "Reallocated display buffer to %d bytes\n", display_buffer_length);
 					}
 
 					//read data
@@ -166,7 +166,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							display_buffer_length-1-display_buffer_offset
 						  );
 
-					fprintf(stderr, "Read %d bytes from stdin\n", error);
+					errlog(config, LOG_DEBUG, "Read %d bytes from stdin\n", error);
 
 					//terminate string
 					if(error>0){
@@ -188,7 +188,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							fprintf(stderr, "Failed to preprocess input text\n");
 							abort=-1;
 						}
-						fprintf(stderr, "Updated display text to\n\"%s\"\n", display_buffer);
+						errlog(config, LOG_INFO, "Updated display text to\n\"%s\"\n", display_buffer);
 
 						//blockify
 						if(!string_blockify(&blocks, display_buffer)){

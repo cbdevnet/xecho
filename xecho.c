@@ -23,6 +23,15 @@ int usage(char* fn){
 	return 1;
 }
 
+void errlog(CFG* config, unsigned level, char* fmt, ...){
+	va_list args;
+	va_start(args, fmt);
+	if(config->verbosity>=level){
+		vfprintf(stderr, fmt, args);
+	}
+	va_end(args);
+}
+
 int main(int argc, char** argv){
 	CFG config={
 		0,		//verbosity
@@ -94,22 +103,22 @@ int main(int argc, char** argv){
 		}
 		args_text[((text_length>0)?text_length:1)-1]=0;
 
-		fprintf(stderr, "Input text:\n\"%s\"\n", args_text);
+		errlog(&config, LOG_INFO, "Input text:\n\"%s\"\n", args_text);
 
 		//preprocess
 		if(!string_preprocess(args_text, true)){
-			printf("Failed to preprocess input text\n");
+			fprintf(stderr, "Failed to preprocess input text\n");
 			x11_cleanup(&xres, &config);
 			args_cleanup(&config);
 			return usage(argv[0]);
 		}
 
-		fprintf(stderr, "Printing text:\n\"%s\"\n", args_text);
+		errlog(&config, LOG_DEBUG, "Printing text:\n\"%s\"\n", args_text);
 	}
 
 	//prepare stdin
 	if(config.handle_stdin){
-		fprintf(stderr, "Marking stdin as nonblocking\n");
+		errlog(&config, LOG_INFO, "Marking stdin as nonblocking\n");
 		flags=fcntl(0, F_GETFL, 0);
 		flags|=O_NONBLOCK;
 		fcntl(0, F_SETFL, flags);
@@ -126,7 +135,7 @@ int main(int argc, char** argv){
 		free(args_text);
 	}
 
-	fprintf(stderr, "xecho shutdown ok\n");
+	errlog(&config, LOG_INFO, "xecho shutdown ok\n");
 
 	return 0;
 }

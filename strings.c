@@ -28,6 +28,7 @@ bool string_preprocess(char* input, bool handle_escapes){
 			//handle tab?
 			case '\r':
 				//skip back to last newline
+				//FIXME handle \r\n
 				for(c=text_pos-1;c>=0&&input[c];c--){
 					if(input[c]=='\n'){
 						break;
@@ -94,7 +95,7 @@ bool string_blockify(TEXTBLOCK*** blocks, char* input){
 	}
 	
 	if(!(*blocks)){
-		fprintf(stderr, "Initially allocating block container for %d pointers\n", blocks_needed+1);
+		//fprintf(stderr, "Initially allocating block container for %d pointers\n", blocks_needed+1);
 		//allocate array structure
 		(*blocks)=calloc(blocks_needed+1, sizeof(TEXTBLOCK*));
 		if(!(*blocks)){
@@ -105,9 +106,9 @@ bool string_blockify(TEXTBLOCK*** blocks, char* input){
 	}
 	else{
 		for(;(*blocks)[num_blocks];num_blocks++){
-			fprintf(stderr, "Tested block %d\n", num_blocks);
 		}
-		fprintf(stderr, "%d blocks currently initialized in set, need %d\n", num_blocks, blocks_needed);
+
+		//fprintf(stderr, "%d blocks currently initialized in set, need %d\n", num_blocks, blocks_needed);
 		if(num_blocks<blocks_needed){
 			//reallocate for more slots
 			(*blocks)=realloc((*blocks), (blocks_needed+1)*sizeof(TEXTBLOCK*));
@@ -117,44 +118,39 @@ bool string_blockify(TEXTBLOCK*** blocks, char* input){
 			}
 			
 			for(;num_blocks<=blocks_needed;num_blocks++){
-				fprintf(stderr, "NULLing block pointer %d\n", num_blocks);
 				(*blocks)[num_blocks]=NULL;
 			}
 
-			fprintf(stderr, "After alloc session, now at %d slots\n", num_blocks);
+			//fprintf(stderr, "After alloc session, now at %d slots\n", num_blocks);
 			num_blocks--;
 		}
 		else{
-			fprintf(stderr, "Not touching block set, is big enough\n");
+			//fprintf(stderr, "Not touching block set, is big enough\n");
 		}
 	}
 
 	//fill empty pointers (else the counting structure is borken)
 	for(i=0;i<num_blocks;i++){
 		if(!(*blocks)[i]){
-			fprintf(stderr, "Allocating block %d structure data\n", i);
 			(*blocks)[i]=calloc(1, sizeof(TEXTBLOCK));
 		}
-		fprintf(stderr, "Filling pointer %d with structure data\n", i);
 		(*blocks)[i]->active=false;
 	}
 
 	for(i=0;input[i];i++){
 		if(input[i]=='\n'){
-			fprintf(stderr, "Storing block %d\n", current_block);
 			if(!string_block_store((*blocks)[current_block++], input+input_offset, i-input_offset)){
 				return false;
 			}
 			input_offset=i+1;
 		}
 	}
-	fprintf(stderr, "Storing last block %d\n", current_block);
 	if(!string_block_store((*blocks)[current_block], input+input_offset, i-input_offset)){
 		return false;
 	}
 
 	if(((*blocks)[current_block]->text)[0]==0){
-		fprintf(stderr, "Disabling last block, was empty\n");
+		//fprintf(stderr, "Disabling last block, was empty\n");
 		(*blocks)[current_block]->active=false;
 	}
 

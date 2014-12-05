@@ -108,7 +108,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	else{
 		config->double_buffer=false;
 	}
-	fprintf(stderr, "Double buffering %s\n", config->double_buffer?"enabled":"disabled");
+	errlog(config, LOG_INFO, "Double buffering %s\n", config->double_buffer?"enabled":"disabled");
 	
 	res->screen=DefaultScreen(res->display);
 	root=RootWindow(res->display, res->screen);
@@ -166,7 +166,6 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	}
 
 	//make xft drawable from window
-	//FIXME visuals & colormaps?
 	res->drawable=XftDrawCreate(res->display, (config->double_buffer?res->back_buffer:res->main), DefaultVisual(res->display, res->screen), DefaultColormap(res->display, res->screen));
 
 	if(!res->drawable){
@@ -250,7 +249,7 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 		}
 
 		//draw text
-		fprintf(stderr, "Drawing block %d (%s) at layoutcoords %d|%d size %d\n", i, blocks[i]->text, 
+		errlog(config, LOG_DEBUG, "Drawing block %d (%s) at layoutcoords %d|%d size %d\n", i, blocks[i]->text, 
 				blocks[i]->layout_x+blocks[i]->extents.x, 
 				blocks[i]->layout_y+blocks[i]->extents.y, 
 				(int)blocks[i]->size);
@@ -274,9 +273,9 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 
 void x11_block_bounds(XRESOURCES* xres, TEXTBLOCK* block, XftFont* font){
 	XftTextExtentsUtf8(xres->display, font, (FcChar8*)block->text, strlen(block->text), &(block->extents));
-	fprintf(stderr, "Block \"%s\" extents: width %d, height %d, x %d, y %d, xOff %d, yOff %d\n",
-			block->text, block->extents.width, block->extents.height, block->extents.x, block->extents.y,
-			block->extents.xOff, block->extents.yOff);
+	//fprintf(stderr, "Block \"%s\" extents: width %d, height %d, x %d, y %d, xOff %d, yOff %d\n",
+	//		block->text, block->extents.width, block->extents.height, block->extents.x, block->extents.y,
+	//		block->extents.xOff, block->extents.yOff);
 
 	//block->width=extents.xOff;
 	//block->height=extents.height;
@@ -304,7 +303,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 
 	//no blocks, bail out
 	if(num_blocks<1||width<1||height<1){
-		fprintf(stderr, "Maximizer bailing out, nothing to do\n");
+		errlog(config, LOG_DEBUG, "Maximizer bailing out, nothing to do\n");
 		return true;
 	}
 
@@ -326,11 +325,11 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		//use last known size as base
 		current_size=blocks[longest_block]->size;
 	}
-	fprintf(stderr, "Guessing initial size %d\n", (int)current_size);
+	errlog(config, LOG_DEBUG, "Guessing initial size %d\n", (int)current_size);
 
 	do{
 		//scale up until out of bounds
-		fprintf(stderr, "Doing block maximization for %dx%d bounds with font %s at %d, directionality %s\n", width, height, config->font_name, (int)current_size, scale_up?"up":"down");
+		errlog(config, LOG_DEBUG, "Doing block maximization for %dx%d bounds with font %s at %d, directionality %s\n", width, height, config->font_name, (int)current_size, scale_up?"up":"down");
 		
 		//build font
 		font=XftFontOpen(xres->display, xres->screen,
@@ -352,7 +351,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 				
 				//ignore empty blocks
 				if(blocks[i]->text[0]==0){
-					fprintf(stderr, "Marking empty block %d as already calculated\n", i);
+					errlog(config, LOG_DEBUG, "Marking empty block %d as already calculated\n", i);
 					blocks[i]->calculated=true;
 				}
 			}
@@ -371,30 +370,30 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		}
 
 		if(current_size!=0&&(bounding_width<1||bounding_height<1)){
-			fprintf(stderr, "Bounding box is empty, bailing out\n");
+			errlog(config, LOG_DEBUG, "Bounding box is empty, bailing out\n");
 			break;
 		}
 
-		fprintf(stderr, "At size %d bounding box is %dx%d\n", (int)current_size, bounding_width, bounding_height);
+		errlog(config, LOG_DEBUG, "At size %d bounding box is %dx%d\n", (int)current_size, bounding_width, bounding_height);
 		if(bounding_width>width||bounding_height>height){
 			if(scale_up){
-				fprintf(stderr, "Scaled out of window bounds, reversing\n");
+				errlog(config, LOG_DEBUG, "Scaled out of window bounds, reversing\n");
 				scale_up=false;
 				current_size--;
 			}
 			else{
-				fprintf(stderr, "Over window bounds, decreasing font size\n");
+				errlog(config, LOG_DEBUG, "Over window bounds, decreasing font size\n");
 				current_size--;
 			}
 		}
 		else{
 			if(scale_up){
 				if(config->max_size>0&&current_size>=config->max_size){
-					fprintf(stderr, "Reached max size, bailing out\n");
+					errlog(config, LOG_DEBUG, "Reached max size, bailing out\n");
 					done=true;
 				}
 				else{
-					fprintf(stderr, "Inside bounds, increasing font size\n");
+					errlog(config, LOG_DEBUG, "Inside bounds, increasing font size\n");
 					current_size++;
 				}
 			}
@@ -404,12 +403,12 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		}
 	}while(!done);
 
-	fprintf(stderr, "Size fixed at %d\n", (int)current_size);
+	errlog(config, LOG_DEBUG, "Size fixed at %d\n", (int)current_size);
 
 	//set active to false for longest
 	done_block=string_block_longest(blocks);
 	blocks[done_block]->calculated=true;
-	fprintf(stderr, "Marked block %d as done\n", done_block);
+	errlog(config, LOG_DEBUG, "Marked block %d as done\n", done_block);
 
 	return true;
 }
@@ -451,7 +450,6 @@ bool x11_align_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigne
 		}
 
 		//align y axis
-		//FIXME use line_spacing here
 		switch(config->alignment){
 			case ALIGN_WEST:
 			case ALIGN_EAST:
@@ -504,7 +502,7 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 
 	//initialize calculation set
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
-		fprintf(stderr, "Block %d: %s\n", i, blocks[i]->text);
+		errlog(config, LOG_INFO, "Block %d: %s\n", i, blocks[i]->text);
 		blocks[i]->calculated=false;
 		num_blocks++;
 	}
@@ -514,21 +512,21 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 		layout_width-=2*config->padding;
 	}
 	if(height>(2*config->padding)){
-		fprintf(stderr, "Subtracting %d pixels for height padding\n", config->padding);
+		errlog(config, LOG_DEBUG, "Subtracting %d pixels for height padding\n", config->padding);
 		layout_height-=2*config->padding;
 	}
 	if(num_blocks>1&&(((num_blocks-1)*(config->line_spacing)<layout_height))){
-		fprintf(stderr, "Subtracting %d pixels for linespacing\n", (num_blocks-1)*config->line_spacing);
+		errlog(config, LOG_DEBUG, "Subtracting %d pixels for linespacing\n", (num_blocks-1)*config->line_spacing);
 		layout_height-=(num_blocks-1)*config->line_spacing;
 	}
 
-	fprintf(stderr, "Window volume %dx%d, layout volume %dx%d\n", width, height, layout_width, layout_height);
+	errlog(config, LOG_INFO, "Window volume %dx%d, layout volume %dx%d\n", width, height, layout_width, layout_height);
 
 	if(config->force_size==0){
 		//do binary search for match size
 		i=0;
 		do{
-			fprintf(stderr, "Running maximizer for pass %d (%d blocks)\n", i, num_blocks);
+			errlog(config, LOG_DEBUG, "Running maximizer for pass %d (%d blocks)\n", i, num_blocks);
 			if(!x11_maximize_blocks(xres, config, blocks, layout_width, layout_height)){
 				return false;
 			}

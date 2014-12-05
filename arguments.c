@@ -169,7 +169,7 @@ bool args_sane(CFG* config){
 	//simply free() them later
 
 	if(!(config->font_name)){
-		fprintf(stderr, "No font name specified, using default.\n");
+		errlog(config, LOG_INFO, "No font name specified, using default.\n");
 		config->font_name=calloc(strlen(DEFAULT_FONT)+1, sizeof(char));
 		if(!(config->font_name)){
 			fprintf(stderr, "Failed to allocate memory\n");
@@ -179,7 +179,7 @@ bool args_sane(CFG* config){
 	}
 
 	if(!(config->bg_color)){
-		fprintf(stderr, "No window color specified, using default\n");
+		errlog(config, LOG_INFO, "No window color specified, using default\n");
 		config->bg_color=calloc(strlen(DEFAULT_WINCOLOR)+1, sizeof(char));
 		if(!(config->bg_color)){
 			fprintf(stderr, "Failed to allocate memory\n");
@@ -189,7 +189,7 @@ bool args_sane(CFG* config){
 	}
 
 	if(!(config->text_color)){
-		fprintf(stderr, "No text color specified, using default\n");
+		errlog(config, LOG_INFO, "No text color specified, using default\n");
 		config->text_color=calloc(strlen(DEFAULT_TEXTCOLOR)+1, sizeof(char));
 		if(!(config->text_color)){
 			fprintf(stderr, "Failed to allocate memory\n");
@@ -200,7 +200,7 @@ bool args_sane(CFG* config){
 
 	if(!(config->debug_color)){
 		//TODO make this configurable
-		fprintf(stderr, "No debug color specified, using default\n");
+		errlog(config, LOG_INFO, "No debug color specified, using default\n");
 		config->debug_color=calloc(strlen(DEFAULT_DEBUGCOLOR)+1, sizeof(char));
 		if(!(config->debug_color)){
 			fprintf(stderr, "Failed to allocate memory\n");

@@ -74,6 +74,10 @@ typedef struct /*_TEXT_BLOCK*/ {
 #define DEFAULT_DEBUGCOLOR "red"
 #define STDIN_DATA_CHUNK 512
 
+#define LOG_DEBUG 3
+#define LOG_INFO 2
+void errlog(CFG* config, unsigned level, char* fmt, ...);
+
 #include "colorspec.c"
 #include "arguments.c"
 #include "strings.c"
