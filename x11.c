@@ -271,29 +271,63 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 	return true;
 }
 
-void x11_block_bounds(XRESOURCES* xres, TEXTBLOCK* block, XftFont* font){
-	XftTextExtentsUtf8(xres->display, font, (FcChar8*)block->text, strlen(block->text), &(block->extents));
+bool x11_blocks_resize(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, XGlyphInfo* bounding_box, double size){
+	XftFont* font=NULL;
+	unsigned bounding_width=0, bounding_height=0;
+	unsigned i;
+
+	//FIXME is config needed here?
+
+	//load font with at supplied size
+	font=XftFontOpen(xres->display, xres->screen,
+			XFT_FAMILY, XftTypeString, config->font_name,
+			XFT_PIXEL_SIZE, XftTypeDouble, size,
+			NULL
+	);
+	
+	if(!font){
+		fprintf(stderr, "Could not load font\n");
+		return false;
+	}
+	
 	//fprintf(stderr, "Block \"%s\" extents: width %d, height %d, x %d, y %d, xOff %d, yOff %d\n",
 	//		block->text, block->extents.width, block->extents.height, block->extents.x, block->extents.y,
 	//		block->extents.xOff, block->extents.yOff);
+	
+	//bounds calculation
+	for(i=0;blocks[i]&&blocks[i]->active;i++){
+		//update only not yet calculated blocks
+		if(!(blocks[i]->calculated)){
+			XftTextExtentsUtf8(xres->display, font, (FcChar8*)blocks[i]->text, strlen(blocks[i]->text), &(blocks[i]->extents));
+			blocks[i]->size=size;
+		}
+		
+		//calculate bounding box over all
+		bounding_height+=blocks[i]->extents.height;
+		if(blocks[i]->extents.width>bounding_width){
+			bounding_width=blocks[i]->extents.width;
+		}
+	}
 
-	//block->width=extents.xOff;
-	//block->height=extents.height;
-	//block->x=extents.x;
-	//block->y=extents.y;
+	if(bounding_box){
+		bounding_box->width=bounding_width;
+		bounding_box->height=bounding_height;
+	}
+
+	XftFontClose(xres->display, font);
+	return true;
 }
 
-
 bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigned width, unsigned height){
-	unsigned i, bounding_width, bounding_height, num_blocks=0;
-	XftFont* font=NULL;
+	unsigned i, num_blocks=0;
 	double current_size=1;
-	bool done=false;
-	bool scale_up=true;
+	unsigned bound_low, bound_high, bound_delta;
 	unsigned done_block, longest_block;
+	XGlyphInfo bbox;
+	bool break_loop=false;
 
-	//FIXME this function is where most time is wasted.
-	
+	int bounds_delta=4; //initial secondary bound delta
+
 	//count blocks
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
 		if(!blocks[i]->calculated){
@@ -307,13 +341,15 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		return true;
 	}
 
-	//guess initial font size
+	errlog(config, LOG_DEBUG, "Maximizer running for %dx%d bounds\n", width, height);
+
+	//guess primary bound
 	//sizes in sets to be maximized are always the same,
 	//since any pass modifies all active blocks to the same size
 	longest_block=string_block_longest(blocks);
 	if(blocks[longest_block]->size==0){
 		if(config->max_size>0){
-			//use max size as initial test
+			//use max size as primary bound
 			current_size=config->max_size;
 		}
 		else{
@@ -322,90 +358,101 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		}
 	}
 	else{
-		//use last known size as base
+		//use last known size as primary bound
 		current_size=blocks[longest_block]->size;
 	}
-	errlog(config, LOG_DEBUG, "Guessing initial size %d\n", (int)current_size);
+	errlog(config, LOG_DEBUG, "Guessing primary bound %d\n", (int)current_size);
+
+	//find secondary bound for binary search
+	if(!x11_blocks_resize(xres, config, blocks, &bbox, current_size)){
+		fprintf(stderr, "Failed to resize blocks to primary bound\n");
+	}
+
+	if(bbox.height>height||bbox.width>width){
+		//primary bound is upper bound, search down
+		bounds_delta*=-1;
+	}
+	errlog(config, LOG_DEBUG, "Primary bound is %s than bounding box\n", (bounds_delta<0)?"bigger":"smaller");
 
 	do{
-		//scale up until out of bounds
-		errlog(config, LOG_DEBUG, "Doing block maximization for %dx%d bounds with font %s at %d, directionality %s\n", width, height, config->font_name, (int)current_size, scale_up?"up":"down");
-		
-		//build font
-		font=XftFontOpen(xres->display, xres->screen,
-				XFT_FAMILY, XftTypeString, config->font_name,
-				XFT_PIXEL_SIZE, XftTypeDouble, current_size,
-				NULL
-		);
+		bounds_delta*=2;
 
-		if(!font){
-			fprintf(stderr, "Failed to allocate font %s at %d\n", config->font_name, (int)current_size);
-			return false;
-		}
-
-		//calculate bounding boxes with current size for all nonfinished
-		for(i=0;blocks[i]&&blocks[i]->active;i++){
-			if(!blocks[i]->calculated){
-				x11_block_bounds(xres, blocks[i], font);
-				blocks[i]->size=current_size;
-				
-				//ignore empty blocks
-				if(blocks[i]->text[0]==0){
-					errlog(config, LOG_DEBUG, "Marking empty block %d as already calculated\n", i);
-					blocks[i]->calculated=true;
-				}
-			}
-		}
-
-		XftFontClose(xres->display, font);
-
-		//build bounding box
-		bounding_width=0;
-		bounding_height=0;
-		for(i=0;blocks[i]&&blocks[i]->active;i++){
-			bounding_height+=blocks[i]->extents.height;
-			if(blocks[i]->extents.width>bounding_width){
-				bounding_width=blocks[i]->extents.width;
-			}
-		}
-
-		if(current_size!=0&&(bounding_width<1||bounding_height<1)){
-			errlog(config, LOG_DEBUG, "Bounding box is empty, bailing out\n");
+		if(current_size+bounds_delta<1){
+			errlog(config, LOG_DEBUG, "Search went out of permissible range\n");
+			bounds_delta=-current_size; //FIXME this might fail when the condition is met with an overflow
 			break;
 		}
 
-		errlog(config, LOG_DEBUG, "At size %d bounding box is %dx%d\n", (int)current_size, bounding_width, bounding_height);
-		if(bounding_width>width||bounding_height>height){
-			if(scale_up){
-				errlog(config, LOG_DEBUG, "Scaled out of window bounds, reversing\n");
-				scale_up=false;
-				current_size--;
+		if(!x11_blocks_resize(xres, config, blocks, &bbox, current_size+bounds_delta)){
+			fprintf(stderr, "Failed to resize blocks to size %d\n", (int)current_size+bounds_delta);
+			return false;
+		}
+
+		if(bbox.width<1||bbox.height<1){
+			errlog(config, LOG_DEBUG, "Bounding box was empty\n");
+			return true;
+		}
+
+		errlog(config, LOG_DEBUG, "With bounds_delta %d bounding box is %dx%d\n", bounds_delta, bbox.width, bbox.height);
+	}
+	//loop until direction needs to be reversed
+	while(	((bounds_delta<0)&&(bbox.width>=width||bbox.height>=height)) //searching lower bound, break if within bounds
+		|| ((bounds_delta>0)&&(bbox.width<width&&bbox.height<height))); //searching upper bound, break if out of bounds
+	errlog(config, LOG_DEBUG, "Calculated secondary bound %d via offset %d\n", (int)current_size+bounds_delta, bounds_delta);
+
+	//prepare bounds for binary search
+	if(bounds_delta<0){
+		bound_low=current_size+bounds_delta;
+		bound_high=current_size; //cant optimize here if starting bound matches exactly
+	}
+	else{
+		bound_high=current_size+bounds_delta;
+		bound_low=current_size; //cant optimize here if starting bound matches exactly
+	}
+
+	//binary search for final size
+	do{
+		bound_delta=bound_high-bound_low;
+		current_size=bound_low+((double)bound_delta/(double)2);
+		
+		//stupid tiebreaker implementation
+		if(bound_delta/2==0){
+			if(break_loop){
+				current_size=bound_high;
 			}
 			else{
-				errlog(config, LOG_DEBUG, "Over window bounds, decreasing font size\n");
-				current_size--;
+				break_loop=true;
 			}
+		}
+
+		errlog(config, LOG_DEBUG, "Binary search testing size %f, hi %d, lo %d, delta %d - ", current_size, bound_high, bound_low, bound_delta);
+
+		if(!x11_blocks_resize(xres, config, blocks, &bbox, current_size)){
+			fprintf(stderr, "Failed to resize blocks to test size %d\n", (int)current_size);
+			return false;
+		}
+
+		if(bbox.width<1||bbox.height<1){
+			errlog(config, LOG_DEBUG, "Bounding box is 0, bailing out\n");
+			break;
+		}
+
+		if(bbox.width>width||bbox.height>height){
+			//out of bounds
+			bound_high=current_size;
+			errlog(config, LOG_DEBUG, "oob\n");
 		}
 		else{
-			if(scale_up){
-				if(config->max_size>0&&current_size>=config->max_size){
-					errlog(config, LOG_DEBUG, "Reached max size, bailing out\n");
-					done=true;
-				}
-				else{
-					errlog(config, LOG_DEBUG, "Inside bounds, increasing font size\n");
-					current_size++;
-				}
-			}
-			else{
-				done=true;
-			}
+			//inside bounds
+			bound_low=current_size;
+			errlog(config, LOG_DEBUG, "bounds ok\n");
 		}
-	}while(!done);
 
-	errlog(config, LOG_DEBUG, "Size fixed at %d\n", (int)current_size);
+	}while(bound_delta>0);
+	errlog(config, LOG_DEBUG, "Final size is %d\n", (int)current_size);
 
 	//set active to false for longest
+	//FIXME find longest by actual extents
 	done_block=string_block_longest(blocks);
 	blocks[done_block]->calculated=true;
 	errlog(config, LOG_DEBUG, "Marked block %d as done\n", done_block);
@@ -489,10 +536,7 @@ bool x11_align_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsigne
 }
 
 bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, unsigned width, unsigned height){
-	unsigned i;
-	XftFont* font=NULL;
-
-	unsigned num_blocks=0;
+	unsigned i, num_blocks=0;
 	unsigned layout_width=width, layout_height=height;
 
 	//early exit.
@@ -506,6 +550,8 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 		blocks[i]->calculated=false;
 		num_blocks++;
 	}
+
+	//FIXME disable empty blocks before running maximizer
 
 	//calculate layout volume
 	if(width>(2*config->padding)){
@@ -536,25 +582,11 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 		while(config->independent_resize&&i<num_blocks);
 	}
 	else{
-		//load font with forced size
-		font=XftFontOpen(xres->display, xres->screen,
-				XFT_FAMILY, XftTypeString, config->font_name,
-				XFT_PIXEL_SIZE, XftTypeDouble, config->force_size,
-				NULL
-		);
-
-		if(!font){
-			fprintf(stderr, "Could not load font\n");
+		//render with forced size
+		if(!x11_blocks_resize(xres, config, blocks, NULL, config->force_size)){
+			fprintf(stderr, "Failed to resize blocks\n");
 			return false;
 		}
-
-		//bounds calculation
-		for(i=0;blocks[i]&&blocks[i]->active;i++){
-			x11_block_bounds(xres, blocks[i], font);
-			blocks[i]->size=config->force_size;
-		}
-
-		XftFontClose(xres->display, font);
 	}
 	
 	//do alignment pass
