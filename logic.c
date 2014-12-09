@@ -7,11 +7,15 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 	XEvent event;
 	XdbeSwapInfo swap_info;
 
-	unsigned window_width=0, window_height=0;
+	unsigned window_width, window_height;
 	unsigned display_buffer_length=0, display_buffer_offset;
 
 	TEXTBLOCK** blocks=NULL;
 	char* display_buffer=NULL;
+
+	//get initial sizes
+	window_width=DisplayWidth(xres->display, xres->screen);
+	window_height=DisplayHeight(xres->display, xres->screen);
 	
 	//prepare initial block buffer
 	if(initial_text){
