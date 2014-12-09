@@ -299,6 +299,7 @@ bool x11_blocks_resize(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, XGlyph
 		//update only not yet calculated blocks
 		if(!(blocks[i]->calculated)){
 			XftTextExtentsUtf8(xres->display, font, (FcChar8*)blocks[i]->text, strlen(blocks[i]->text), &(blocks[i]->extents));
+			errlog(config, LOG_DEBUG, "Recalculated block %d (%s) extents: %dx%d\n", i, blocks[i]->text, blocks[i]->extents.width, blocks[i]->extents.height);
 			blocks[i]->size=size;
 		}
 		
@@ -396,8 +397,8 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		errlog(config, LOG_DEBUG, "With bounds_delta %d bounding box is %dx%d\n", bounds_delta, bbox.width, bbox.height);
 	}
 	//loop until direction needs to be reversed
-	while(	((bounds_delta<0)&&(bbox.width>=width||bbox.height>=height)) //searching lower bound, break if within bounds
-		|| ((bounds_delta>0)&&(bbox.width<width&&bbox.height<height))); //searching upper bound, break if out of bounds
+	while(	((bounds_delta<0)&&(bbox.width>width||bbox.height>height)) //searching lower bound, break if within bounds
+		|| ((bounds_delta>0)&&(bbox.width<=width&&bbox.height<=height))); //searching upper bound, break if out of bounds
 	errlog(config, LOG_DEBUG, "Calculated secondary bound %d via offset %d\n", (int)current_size+bounds_delta, bounds_delta);
 
 	//prepare bounds for binary search
@@ -433,7 +434,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 			}
 		}
 
-		errlog(config, LOG_DEBUG, "Binary search testing size %d, hi %d, lo %d, delta %d - ", (int)current_size, bound_high, bound_low, bound_delta);
+		errlog(config, LOG_DEBUG, "Binary search testing size %d, hi %d, lo %d, delta %d\n", (int)current_size, bound_high, bound_low, bound_delta);
 
 		if(!x11_blocks_resize(xres, config, blocks, &bbox, current_size)){
 			fprintf(stderr, "Failed to resize blocks to test size %d\n", (int)current_size);
@@ -448,12 +449,12 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		if(bbox.width>width||bbox.height>height){
 			//out of bounds
 			bound_high=current_size;
-			errlog(config, LOG_DEBUG, "oob\n");
+			errlog(config, LOG_DEBUG, "-> OOB\n");
 		}
 		else{
 			//inside bounds
 			bound_low=current_size;
-			errlog(config, LOG_DEBUG, "bounds ok\n");
+			errlog(config, LOG_DEBUG, "-> OK\n");
 		}
 
 	}while(bound_delta>0);
@@ -555,11 +556,20 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 	//initialize calculation set
 	for(i=0;blocks[i]&&blocks[i]->active;i++){
 		errlog(config, LOG_INFO, "Block %d: %s\n", i, blocks[i]->text);
-		blocks[i]->calculated=false;
+		if(blocks[i]->text[0]){
+			blocks[i]->calculated=false;
+		}
+		else{
+			//disable obviously empty blocks before running maximizer
+			errlog(config, LOG_DEBUG, "Disabling empty block %d\n", i);
+			blocks[i]->calculated=true;
+			blocks[i]->extents.width=0;
+			blocks[i]->extents.height=0;
+			blocks[i]->extents.x=0;
+			blocks[i]->extents.y=0;
+		}
 		num_blocks++;
 	}
-
-	//FIXME disable empty blocks before running maximizer
 
 	//calculate layout volume
 	if(width>(2*config->padding)){
