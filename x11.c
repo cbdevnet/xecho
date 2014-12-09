@@ -410,6 +410,14 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		bound_low=current_size; //cant optimize here if starting bound matches exactly
 	}
 
+	if(config->max_size>0&&bound_high>config->max_size){
+		errlog(config, LOG_DEBUG, "Enforcing size constraint\n");
+		bound_high=config->max_size;
+	}
+	if(config->max_size>0&&bound_low>config->max_size){
+		bound_low=1;
+	}
+
 	//binary search for final size
 	do{
 		bound_delta=bound_high-bound_low;
@@ -425,7 +433,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 			}
 		}
 
-		errlog(config, LOG_DEBUG, "Binary search testing size %f, hi %d, lo %d, delta %d - ", current_size, bound_high, bound_low, bound_delta);
+		errlog(config, LOG_DEBUG, "Binary search testing size %d, hi %d, lo %d, delta %d - ", (int)current_size, bound_high, bound_low, bound_delta);
 
 		if(!x11_blocks_resize(xres, config, blocks, &bbox, current_size)){
 			fprintf(stderr, "Failed to resize blocks to test size %d\n", (int)current_size);
