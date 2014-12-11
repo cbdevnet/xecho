@@ -173,6 +173,10 @@ bool x11_init(XRESOURCES* res, CFG* config){
 		return false;
 	}
 	
+	//register for WM_DELETE_WINDOW messages
+	res->wm_delete=XInternAtom(res->display, "WM_DELETE_WINDOW", False);
+	XSetWMProtocols(res->display, res->main, &(res->wm_delete), 1);
+
 	//map window
 	XMapRaised(res->display, res->main);
 

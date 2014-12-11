@@ -55,6 +55,7 @@ typedef struct /*_XDATA*/ {
 	XftColor text_color;
 	XftColor bg_color;
 	XftColor debug_color;
+	Atom wm_delete;
 	X_FDS xfds;
 } XRESOURCES;
 

@@ -23,6 +23,12 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 			fprintf(stderr, "Failed to blockify initial input text\n");
 			return -1;
 		}
+		
+		//recalculate blocks
+		if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
+			fprintf(stderr, "Block calculation failed\n");
+			return -1;
+		}
 	}
 
 	//copy initial text to stdin buffer
@@ -109,7 +115,13 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 					break;
 
 				case ClientMessage:
-					errlog(config, LOG_INFO, "Client message\n");
+					if(event.xclient.data.l[0]==xres->wm_delete){
+						errlog(config, LOG_INFO, "Closing down window\n");
+						abort=1;
+					}
+					else{
+						errlog(config, LOG_INFO, "Client message\n");
+					}
 					break;
 
 				default:

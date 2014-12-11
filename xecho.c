@@ -59,6 +59,7 @@ int main(int argc, char** argv){
 		{},		//text color
 		{},		//bg color
 		{},		//debug color
+		0,		//wm_delete atom
 		{NULL, 0}	//xfd set
 	};
 	int args_end;
