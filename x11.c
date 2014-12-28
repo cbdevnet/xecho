@@ -80,6 +80,8 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	unsigned width, height;
 	Atom wm_state_fullscreen;
 	int xdbe_major, xdbe_minor;
+	XTextProperty window_name;
+	char* window_name_raw[]={"xecho"};
 
 	//allocate some structures
 	XSizeHints* size_hints=XAllocSizeHints();
@@ -148,10 +150,14 @@ bool x11_init(XRESOURCES* res, CFG* config){
 				CWBackPixel | CWCursor | CWEventMask, 
 				&window_attributes);
 
-	//set window properties (TODO XSetWMProperties)
-	class_hints->res_name="xecho-binary";
-	class_hints->res_class="xecho";
-	//XSetWMProperties(RESOURCES.display, RESOURCES.main_window, "xecho", NULL, argv, argc, size_hints, wm_hints, class_hints);
+	//set window properties
+	//TODO error handling
+	XStringListToTextProperty(window_name_raw, 1, &window_name);
+	wm_hints->flags=0;
+	class_hints->res_name="xecho ehlo";
+	class_hints->res_class="xecho class";
+	
+	XSetWMProperties(res->display, res->main, &window_name, NULL, NULL, 0, NULL, wm_hints, class_hints);
 	XFree(size_hints);
 	XFree(wm_hints);
 	XFree(class_hints);
