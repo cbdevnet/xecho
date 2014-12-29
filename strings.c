@@ -1,6 +1,6 @@
 bool string_preprocess(char* input, bool handle_escapes){
-	unsigned i, c;
-	int text_pos=0;
+	unsigned i;
+	int c, text_pos=0;
 
 	if(!input){
 		return false;
