@@ -81,7 +81,6 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	Atom wm_state_fullscreen;
 	int xdbe_major, xdbe_minor;
 	XTextProperty window_name;
-	char* window_name_raw[]={"xecho"};
 
 	//allocate some structures
 	XSizeHints* size_hints=XAllocSizeHints();
@@ -152,10 +151,10 @@ bool x11_init(XRESOURCES* res, CFG* config){
 
 	//set window properties
 	//TODO error handling
-	XStringListToTextProperty(window_name_raw, 1, &window_name);
+	XStringListToTextProperty(&(config->window_name), 1, &window_name);
 	wm_hints->flags=0;
-	class_hints->res_name="xecho ehlo";
-	class_hints->res_class="xecho class";
+	class_hints->res_name="xecho";
+	class_hints->res_class="xecho";
 	
 	XSetWMProperties(res->display, res->main, &window_name, NULL, NULL, 0, NULL, wm_hints, class_hints);
 	XFree(size_hints);

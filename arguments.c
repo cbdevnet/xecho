@@ -1,3 +1,13 @@
+bool arg_copy(char** dest, char* src){
+	(*dest)=calloc(strlen(src)+1, sizeof(char));
+	if(!(*dest)){
+		fprintf(stderr, "Failed to allocate memory\n");
+		return false;
+	}
+	strncpy((*dest), src, strlen(src));
+	return true;
+}
+
 int args_parse(CFG* config, int argc, char** argv){
 	unsigned i, c;
 
@@ -26,6 +36,85 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 			else{
 				fprintf(stderr, "No parameter for max size\n");
+				return -1;
+			}
+		}
+		else if(!strcmp(argv[i], "-size")){
+			if(++i<argc){
+				config->force_size=(double)strtoul(argv[i], NULL, 10);
+			}
+			else{
+				fprintf(stderr, "No parameter for size\n");
+				return -1;
+			}
+		}
+		else if(!strcmp(argv[i], "-independent-lines")){
+			config->independent_resize=true;
+		}
+		else if(!strcmp(argv[i], "-disable-text")){
+			config->disable_text=true;
+		}
+		else if(!strcmp(argv[i], "-disable-doublebuffer")){
+			config->double_buffer=false;
+		}
+		else if(!strcmp(argv[i], "-stdin")){
+			config->handle_stdin=true;
+		}
+		else if(!strcmp(argv[i], "-debugboxes")){
+			config->debug_boxes=true;
+		}
+		else if(!strcmp(argv[i], "-fc")){
+			if(++i<argc&&!(config->text_color)){
+				if(!arg_copy(&(config->text_color), argv[i])){
+					return false;
+				}
+			}
+			else{
+				fprintf(stderr, "No parameter for text color or already defined\n");
+				return -1;
+			}
+		}
+		else if(!strcmp(argv[i], "-bc")){
+			if(++i<argc&&!(config->bg_color)){
+				if(!arg_copy(&(config->bg_color), argv[i])){
+					return false;
+				}
+			}
+			else{
+				fprintf(stderr, "No parameter for window color or already defined\n");
+				return -1;
+			}
+		}
+		else if(!strcmp(argv[i], "-dc")){
+			if(++i<argc&&!(config->debug_color)){
+				if(!arg_copy(&(config->debug_color), argv[i])){
+					return false;
+				}
+			}
+			else{
+				fprintf(stderr, "No parameter for debug color or already defined\n");
+				return -1;
+			}
+		}
+		else if(!strcmp(argv[i], "-font")){
+			if(++i<argc&&!(config->font_name)){
+				if(!arg_copy(&(config->font_name), argv[i])){
+					return false;
+				}
+			}
+			else{
+				fprintf(stderr, "No parameter for font or already defined\n");
+				return -1;
+			}
+		}
+		else if(!strcmp(argv[i], "-title")){
+			if(++i<argc&&!(config->window_name)){
+				if(!arg_copy(&(config->window_name), argv[i])){
+					return false;
+				}
+			}
+			else{
+				fprintf(stderr, "No parameter for window name or already defined\n");
 				return -1;
 			}
 		}
@@ -80,73 +169,6 @@ int args_parse(CFG* config, int argc, char** argv){
 				return -1;
 			}
 		}
-		else if(!strcmp(argv[i], "-size")){
-			if(++i<argc){
-				config->force_size=(double)strtoul(argv[i], NULL, 10);
-			}
-			else{
-				fprintf(stderr, "No parameter for size\n");
-				return -1;
-			}
-		}
-		else if(!strcmp(argv[i], "-independent-lines")){
-			config->independent_resize=true;
-		}
-		else if(!strcmp(argv[i], "-disable-text")){
-			config->disable_text=true;
-		}
-		else if(!strcmp(argv[i], "-disable-doublebuffer")){
-			config->double_buffer=false;
-		}
-		else if(!strcmp(argv[i], "-fc")){
-			if(++i<argc&&!(config->text_color)){
-				config->text_color=calloc(strlen(argv[i])+1, sizeof(char));
-				if(!(config->text_color)){
-					fprintf(stderr, "Failed to allocate memory\n");
-					return -1;
-				}
-				strncpy(config->text_color, argv[i], strlen(argv[i]));
-			}
-			else{
-				fprintf(stderr, "No parameter for text color or already defined\n");
-				return -1;
-			}
-		}
-		else if(!strcmp(argv[i], "-bc")){
-			if(++i<argc&&!(config->bg_color)){
-				config->bg_color=calloc(strlen(argv[i])+1, sizeof(char));
-				if(!(config->bg_color)){
-					fprintf(stderr, "Failed to allocate memory\n");
-					return -1;
-				}
-				strncpy(config->bg_color, argv[i], strlen(argv[i]));
-			}
-			else{
-				fprintf(stderr, "No parameter for window color or already defined\n");
-				return -1;
-			}
-		}
-		else if(!strcmp(argv[i], "-stdin")){
-			config->handle_stdin=true;
-		}
-		else if(!strcmp(argv[i], "-debugboxes")){
-			config->debug_boxes=true;
-		}
-		else if(!strcmp(argv[i], "-font")){
-			if(++i<argc&&!(config->font_name)){
-				config->font_name=calloc(strlen(argv[i])+1, sizeof(char));
-				if(!(config->font_name)){
-					fprintf(stderr, "Failed to allocate memory\n");
-					return -1;
-				}
-				strncpy(config->font_name, argv[i], strlen(argv[i]));
-			}
-			else{
-				fprintf(stderr, "No parameter for font or already defined\n");
-				return -1;
-			}
-
-		}
 		else if(!strncmp(argv[i], "-v", 2)){
 			for(c=1;argv[i][c]=='v';c++){
 			}
@@ -170,43 +192,37 @@ bool args_sane(CFG* config){
 
 	if(!(config->font_name)){
 		errlog(config, LOG_INFO, "No font name specified, using default.\n");
-		config->font_name=calloc(strlen(DEFAULT_FONT)+1, sizeof(char));
-		if(!(config->font_name)){
-			fprintf(stderr, "Failed to allocate memory\n");
+		if(!arg_copy(&(config->font_name), DEFAULT_FONT)){
 			return false;
 		}
-		strncpy(config->font_name, DEFAULT_FONT, strlen(DEFAULT_FONT));
+	}
+
+	if(!(config->window_name)){
+		errlog(config, LOG_INFO, "No window name specified, using default.\n");
+		if(!arg_copy(&(config->window_name), DEFAULT_WINDOWNAME)){
+			return false;
+		}
 	}
 
 	if(!(config->bg_color)){
 		errlog(config, LOG_INFO, "No window color specified, using default\n");
-		config->bg_color=calloc(strlen(DEFAULT_WINCOLOR)+1, sizeof(char));
-		if(!(config->bg_color)){
-			fprintf(stderr, "Failed to allocate memory\n");
+		if(!arg_copy(&(config->bg_color), DEFAULT_WINCOLOR)){
 			return false;
 		}
-		strncpy(config->bg_color, DEFAULT_WINCOLOR, strlen(DEFAULT_WINCOLOR));
 	}
 
 	if(!(config->text_color)){
 		errlog(config, LOG_INFO, "No text color specified, using default\n");
-		config->text_color=calloc(strlen(DEFAULT_TEXTCOLOR)+1, sizeof(char));
-		if(!(config->text_color)){
-			fprintf(stderr, "Failed to allocate memory\n");
+		if(!arg_copy(&(config->text_color), DEFAULT_TEXTCOLOR)){
 			return false;
 		}
-		strncpy(config->text_color, DEFAULT_TEXTCOLOR, strlen(DEFAULT_TEXTCOLOR));
 	}
 
 	if(!(config->debug_color)){
-		//TODO make this configurable
 		errlog(config, LOG_INFO, "No debug color specified, using default\n");
-		config->debug_color=calloc(strlen(DEFAULT_DEBUGCOLOR)+1, sizeof(char));
-		if(!(config->debug_color)){
-			fprintf(stderr, "Failed to allocate memory\n");
+		if(!arg_copy(&(config->debug_color), DEFAULT_DEBUGCOLOR)){
 			return false;
 		}
-		strncpy(config->debug_color, DEFAULT_DEBUGCOLOR, strlen(DEFAULT_DEBUGCOLOR));
 	}
 
 	if(config->verbosity>1){

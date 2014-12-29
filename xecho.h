@@ -39,6 +39,7 @@ typedef struct /*_CFG_ARGS*/ {
 	char* bg_color;
 	char* debug_color;
 	char* font_name;
+	char* window_name;
 } CFG;
 
 typedef struct /*XFD_AGGREG*/ {
@@ -73,6 +74,7 @@ typedef struct /*_TEXT_BLOCK*/ {
 #define DEFAULT_TEXTCOLOR "black"
 #define DEFAULT_WINCOLOR "white"
 #define DEFAULT_DEBUGCOLOR "red"
+#define DEFAULT_WINDOWNAME "xecho"
 #define STDIN_DATA_CHUNK 512
 
 #define LOG_DEBUG 3
