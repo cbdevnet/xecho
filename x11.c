@@ -150,8 +150,11 @@ bool x11_init(XRESOURCES* res, CFG* config){
 				&window_attributes);
 
 	//set window properties
-	//TODO error handling
-	XStringListToTextProperty(&(config->window_name), 1, &window_name);
+	if(XStringListToTextProperty(&(config->window_name), 1, &window_name)==0){
+		fprintf(stderr, "Failed to create string list, aborting\n");
+		return false;
+	}
+
 	wm_hints->flags=0;
 	class_hints->res_name="xecho";
 	class_hints->res_class="xecho";

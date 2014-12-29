@@ -44,6 +44,11 @@ bool string_preprocess(char* input, bool handle_escapes){
 				if(input[i+1]){
 					text_pos=-1; //is increased directly below
 				}
+				else{
+					//trailing \f, handle in blockify
+					//in order to be roughly compatible
+					//to sm
+				}
 				break;
 			case '\b':
 				//TODO delete one character back, but not over newline
@@ -89,7 +94,7 @@ bool string_blockify(TEXTBLOCK*** blocks, char* input){
 	unsigned i, num_blocks=0, blocks_needed=1, input_offset=0, current_block=0;
 
 	for(i=0;input[i];i++){
-		if(input[i]=='\n'){
+		if(input[i]=='\n'||input[i]=='\f'){
 			blocks_needed++;
 		}
 	}
@@ -138,7 +143,7 @@ bool string_blockify(TEXTBLOCK*** blocks, char* input){
 	}
 
 	for(i=0;input[i];i++){
-		if(input[i]=='\n'){
+		if(input[i]=='\n'||input[i]=='\f'){
 			if(!string_block_store((*blocks)[current_block++], input+input_offset, i-input_offset)){
 				return false;
 			}
