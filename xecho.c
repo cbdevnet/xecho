@@ -8,6 +8,8 @@ int usage(char* fn){
 	printf("\t-font <fontspec>\t\tSelect font by FontConfig name\n\n");
 	printf("\t-fc <colorspec>\t\t\tSet text color by name or HTML code\n\n");
 	printf("\t-bc <colorspec>\t\t\tSet background color by name or code\n\n");
+	printf("\t-dc <colorspec>\t\t\tSet debug color by name or code\n\n");
+	printf("\t-title <title>\t\t\tSet window title\n\n");
 	printf("\t-size <n>\t\t\tRender at font size n\n\n");
 	printf("\t-maxsize <n>\t\t\tLimit font size to n at max\n\n");
 	printf("\t-align [n|ne|e|se|s|sw|w|nw]\tAlign text\n\n");

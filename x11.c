@@ -157,6 +157,8 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	class_hints->res_class="xecho";
 	
 	XSetWMProperties(res->display, res->main, &window_name, NULL, NULL, 0, NULL, wm_hints, class_hints);
+
+	XFree(window_name.value);
 	XFree(size_hints);
 	XFree(wm_hints);
 	XFree(class_hints);

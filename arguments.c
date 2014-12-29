@@ -251,4 +251,5 @@ void args_cleanup(CFG* config){
 	free(config->bg_color);
 	free(config->debug_color);
 	free(config->font_name);
+	free(config->window_name);
 }

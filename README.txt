@@ -21,6 +21,8 @@ Options:
 -font <fontspec>	Font to be used
 -bc <colorspec>		Background color
 -fc <colorspec>		Text color
+-dc <colorspec>		Debug color
+-title <title>		Set window title
 -size <n>		Set static font size
 -maxsize <n>		Set maximum size for scaling
 -align <alignspec>	Align text
