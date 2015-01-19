@@ -290,8 +290,6 @@ bool x11_blocks_resize(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, XGlyph
 	unsigned bounding_width=0, bounding_height=0;
 	unsigned i;
 
-	//FIXME is config needed here?
-
 	//load font with at supplied size
 	font=XftFontOpen(xres->display, xres->screen,
 			XFT_FAMILY, XftTypeString, config->font_name,

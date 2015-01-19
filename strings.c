@@ -51,7 +51,10 @@ bool string_preprocess(char* input, bool handle_escapes){
 				}
 				break;
 			case '\b':
-				//TODO delete one character back, but not over newline
+				//delete one character back, but not over newline
+				if(i>0&&input[i-1]!='\n'){
+					text_pos-=2;
+				}
 				break;
 		}
 
