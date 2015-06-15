@@ -15,8 +15,8 @@ unsigned short colorspec_read_byte(char* cs){
 }
 
 XftColor colorspec_parse(char* cs, Display* display, int screen){
-	XftColor rv;
-	XRenderColor xrender_color={0,0,0,0xffff};
+	XftColor rv = {};
+	XRenderColor xrender_color = {0,0,0,0xffff};
 	int i;
 
 	if(*cs=='#'){
