@@ -1,7 +1,7 @@
 .PHONY: all clean
+CFLAGS=-g -Wall -I/usr/include/freetype2 -lXft -lm -lXext -lX11
 
-all:
-	$(CC) -g -Wall -I/usr/include/freetype2 -lXft -lm -lXext -lX11 -o xecho xecho.c
+all: xecho
 
 clean:
 	rm xecho
