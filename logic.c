@@ -194,6 +194,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 				//check if stdin was closed
 				if(error==0){
 					config->handle_stdin=false;
+					abort = -1;
 				}
 				
 				switch(errno){
