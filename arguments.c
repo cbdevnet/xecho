@@ -1,5 +1,5 @@
 bool arg_copy(char** dest, char* src){
-	(*dest)=calloc(strlen(src)+1, sizeof(char));
+	(*dest) = calloc(strlen(src) + 1, sizeof(char));
 	if(!(*dest)){
 		fprintf(stderr, "Failed to allocate memory\n");
 		return false;
@@ -11,10 +11,10 @@ bool arg_copy(char** dest, char* src){
 int args_parse(CFG* config, int argc, char** argv){
 	unsigned i, c;
 
-	for(i=0;i<argc;i++){
+	for(i = 0; i < argc ; i++){
 		if(!strcmp(argv[i], "-padding")){
-			if(++i<argc){
-				config->padding=strtoul(argv[i], NULL, 10);
+			if(++i < argc){
+				config->padding = strtoul(argv[i], NULL, 10);
 			}
 			else{
 				fprintf(stderr, "No parameter for padding\n");
@@ -22,8 +22,8 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strcmp(argv[i], "-linespacing")){
-			if(++i<argc){
-				config->line_spacing=strtoul(argv[i], NULL, 10);
+			if(++i < argc){
+				config->line_spacing = strtoul(argv[i], NULL, 10);
 			}
 			else{
 				fprintf(stderr, "No parameter for line spacing\n");
@@ -31,8 +31,8 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strcmp(argv[i], "-maxsize")){
-			if(++i<argc){
-				config->max_size=strtoul(argv[i], NULL, 10);
+			if(++i < argc){
+				config->max_size = strtoul(argv[i], NULL, 10);
 			}
 			else{
 				fprintf(stderr, "No parameter for max size\n");
@@ -40,8 +40,8 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strcmp(argv[i], "-size")){
-			if(++i<argc){
-				config->force_size=(double)strtoul(argv[i], NULL, 10);
+			if(++i < argc){
+				config->force_size = (double)strtoul(argv[i], NULL, 10);
 			}
 			else{
 				fprintf(stderr, "No parameter for size\n");
@@ -49,22 +49,22 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strcmp(argv[i], "-independent-lines")){
-			config->independent_resize=true;
+			config->independent_resize = true;
 		}
 		else if(!strcmp(argv[i], "-disable-text")){
-			config->disable_text=true;
+			config->disable_text = true;
 		}
 		else if(!strcmp(argv[i], "-disable-doublebuffer")){
-			config->double_buffer=false;
+			config->double_buffer = false;
 		}
 		else if(!strcmp(argv[i], "-stdin")){
-			config->handle_stdin=true;
+			config->handle_stdin = true;
 		}
 		else if(!strcmp(argv[i], "-debugboxes")){
-			config->debug_boxes=true;
+			config->debug_boxes = true;
 		}
 		else if(!strcmp(argv[i], "-fc")){
-			if(++i<argc&&!(config->text_color)){
+			if(++i < argc && !(config->text_color)){
 				if(!arg_copy(&(config->text_color), argv[i])){
 					return false;
 				}
@@ -75,7 +75,7 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strcmp(argv[i], "-bc")){
-			if(++i<argc&&!(config->bg_color)){
+			if(++i < argc && !(config->bg_color)){
 				if(!arg_copy(&(config->bg_color), argv[i])){
 					return false;
 				}
@@ -86,7 +86,7 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strcmp(argv[i], "-dc")){
-			if(++i<argc&&!(config->debug_color)){
+			if(++i < argc && !(config->debug_color)){
 				if(!arg_copy(&(config->debug_color), argv[i])){
 					return false;
 				}
@@ -97,7 +97,7 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strcmp(argv[i], "-font")){
-			if(++i<argc&&!(config->font_name)){
+			if(++i < argc && !(config->font_name)){
 				if(!arg_copy(&(config->font_name), argv[i])){
 					return false;
 				}
@@ -108,7 +108,7 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strcmp(argv[i], "-title")){
-			if(++i<argc&&!(config->window_name)){
+			if(++i < argc && !(config->window_name)){
 				if(!arg_copy(&(config->window_name), argv[i])){
 					return false;
 				}
@@ -119,45 +119,45 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strcmp(argv[i], "-align")){
-			if(++i<argc){
+			if(++i < argc){
 				switch(argv[i][0]){
 					case 'n':
 					case 'N':
 						switch(argv[i][1]){
 							case 'e':
 							case 'E':
-								config->alignment=ALIGN_NORTHEAST;
+								config->alignment = ALIGN_NORTHEAST;
 								break;
 							case 'w':
 							case 'W':
-								config->alignment=ALIGN_NORTHWEST;
+								config->alignment = ALIGN_NORTHWEST;
 								break;
 							default:
-								config->alignment=ALIGN_NORTH;
+								config->alignment = ALIGN_NORTH;
 						}
 						break;
 					case 'e':
 					case 'E':
-						config->alignment=ALIGN_EAST;
+						config->alignment = ALIGN_EAST;
 						break;
 					case 's':
 					case 'S':
 						switch(argv[i][1]){
 							case 'e':
 							case 'E':
-								config->alignment=ALIGN_SOUTHEAST;
+								config->alignment = ALIGN_SOUTHEAST;
 								break;
 							case 'w':
 							case 'W':
-								config->alignment=ALIGN_SOUTHWEST;
+								config->alignment = ALIGN_SOUTHWEST;
 								break;
 							default:
-								config->alignment=ALIGN_SOUTH;
+								config->alignment = ALIGN_SOUTH;
 						}
 						break;
 					case 'w':
 					case 'W':
-						config->alignment=ALIGN_WEST;
+						config->alignment = ALIGN_WEST;
 						break;
 					default:
 						fprintf(stderr, "Invalid alignment specifier\n");
@@ -170,9 +170,9 @@ int args_parse(CFG* config, int argc, char** argv){
 			}
 		}
 		else if(!strncmp(argv[i], "-v", 2)){
-			for(c=1;argv[i][c]=='v';c++){
+			for(c = 1; argv[i][c] == 'v'; c++){
 			}
-			config->verbosity=c-1;
+			config->verbosity = c - 1;
 		}
 		else if(!strncmp(argv[i], "--", 2)){
 			i++;
@@ -183,7 +183,7 @@ int args_parse(CFG* config, int argc, char** argv){
 		}
 	}
 
-	return i+1;
+	return i + 1;
 }
 
 bool args_sane(CFG* config){
@@ -225,17 +225,17 @@ bool args_sane(CFG* config){
 		}
 	}
 
-	if(config->verbosity>1){
+	if(config->verbosity > 1){
 		fprintf(stderr, "Config summary\n");
 		fprintf(stderr, "Verbosity level: %d\n", config->verbosity);
 		fprintf(stderr, "Text padding: %d\n", config->padding);
 		fprintf(stderr, "Line spacing: %d\n", config->line_spacing);
 		fprintf(stderr, "Maximum size: %d\n", config->max_size);
 		fprintf(stderr, "Text alignment: %d\n", config->alignment);
-		fprintf(stderr, "Resize lines independently: %s\n", config->independent_resize?"true":"false");
-		fprintf(stderr, "Handle stdin: %s\n", config->handle_stdin?"true":"false");
-		fprintf(stderr, "Draw debug boxes: %s\n", config->debug_boxes?"true":"false");
-		fprintf(stderr, "Disable text draw: %s\n", config->disable_text?"true":"false");
+		fprintf(stderr, "Resize lines independently: %s\n", config->independent_resize ? "true":"false");
+		fprintf(stderr, "Handle stdin: %s\n", config->handle_stdin ? "true":"false");
+		fprintf(stderr, "Draw debug boxes: %s\n", config->debug_boxes ? "true":"false");
+		fprintf(stderr, "Disable text draw: %s\n", config->disable_text ? "true":"false");
 		fprintf(stderr, "Forced text size: %d\n", (int)config->force_size);
 		fprintf(stderr, "Text colorspec: %s\n", config->text_color);
 		fprintf(stderr, "Window colorspec: %s\n", config->bg_color);

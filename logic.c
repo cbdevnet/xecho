@@ -16,14 +16,14 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 	//get initial sizes
 	window_width = DisplayWidth(xres->display, xres->screen);
 	window_height = DisplayHeight(xres->display, xres->screen);
-	
+
 	//prepare initial block buffer
 	if(initial_text){
 		if(!string_blockify(&blocks, initial_text)){
 			fprintf(stderr, "Failed to blockify initial input text\n");
 			return -1;
 		}
-		
+
 		//recalculate blocks
 		if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
 			fprintf(stderr, "Block calculation failed\n");
@@ -63,7 +63,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							fprintf(stderr, "Block calculation failed\n");
 							abort = -1;
 						}
-						
+
 						if(config->double_buffer){
 							//update drawable
 							XftDrawChange(xres->drawable, xres->back_buffer);
@@ -73,7 +73,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 						errlog(config, LOG_DEBUG, "Configuration not changed, ignoring\n");
 					}
 					break;
-				
+
 				case Expose:
 					//draw here
 					errlog(config, LOG_INFO, "Expose message, initiating redraw\n");
@@ -239,7 +239,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 	if(display_buffer){
 		free(display_buffer);
 	}
-	
+
 	if(blocks){
 		//free blocks structure
 		for(i = 0; blocks[i]; i++){

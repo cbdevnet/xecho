@@ -6,7 +6,7 @@ bool xfd_add(X_FDS* set, int fd){
 		if(!set->fds){
 			fprintf(stderr, "xfd_add: Initial alloc failed\n");
 			return false;
-		}	
+		}
 		set->size = 1;
 		set->fds[0] = fd;
 		return true;
@@ -110,7 +110,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 		config->double_buffer = false;
 	}
 	errlog(config, LOG_INFO, "Double buffering %s\n", config->double_buffer ? "enabled":"disabled");
-	
+
 	res->screen = DefaultScreen(res->display);
 	root = RootWindow(res->display, res->screen);
 
@@ -136,17 +136,17 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	height = DisplayHeight(res->display, res->screen);
 
 	//create window
-	res->main = XCreateWindow(res->display, 
-				root, 
-				0, 
-				0, 
-				width, 
-				height, 
-				0, 
-				CopyFromParent, 
-				InputOutput, 
-				CopyFromParent, 
-				CWBackPixel | CWCursor | CWEventMask, 
+	res->main = XCreateWindow(res->display,
+				root,
+				0,
+				0,
+				width,
+				height,
+				0,
+				CopyFromParent,
+				InputOutput,
+				CopyFromParent,
+				CWBackPixel | CWCursor | CWEventMask,
 				&window_attributes);
 
 	//set window properties
@@ -158,18 +158,18 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	wm_hints->flags = 0;
 	class_hints->res_name = "xecho";
 	class_hints->res_class="xecho";
-	
+
 	XSetWMProperties(res->display, res->main, &window_name, NULL, NULL, 0, NULL, wm_hints, class_hints);
 
 	XFree(window_name.value);
 	XFree(size_hints);
 	XFree(wm_hints);
 	XFree(class_hints);
-	
+
 	//set fullscreen mode
 	wm_state_fullscreen = XInternAtom(res->display, "_NET_WM_STATE_FULLSCREEN", False);
 	XChangeProperty(res->display, res->main, XInternAtom(res->display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char*) &wm_state_fullscreen, 1);
-	
+
 	//allocate back drawing buffer
 	if(config->double_buffer){
 		res->back_buffer = XdbeAllocateBackBufferName(res->display, res->main, XdbeBackground);
@@ -182,7 +182,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 		fprintf(stderr, "Failed to allocate drawable\n");
 		return false;
 	}
-	
+
 	//register for WM_DELETE_WINDOW messages
 	res->wm_delete = XInternAtom(res->display, "WM_DELETE_WINDOW", False);
 	XSetWMProtocols(res->display, res->main, &(res->wm_delete), 1);
@@ -199,7 +199,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 		fprintf(stderr, "Failed to register connection watch procedure\n");
 		return false;
 	}
-	
+
 	return true;
 }
 
@@ -263,17 +263,17 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 		}
 
 		//draw text
-		errlog(config, LOG_DEBUG, "Drawing block %d (%s) at layoutcoords %d|%d size %d\n", i, blocks[i]->text, 
-				blocks[i]->layout_x + blocks[i]->extents.x, 
-				blocks[i]->layout_y + blocks[i]->extents.y, 
+		errlog(config, LOG_DEBUG, "Drawing block %d (%s) at layoutcoords %d|%d size %d\n", i, blocks[i]->text,
+				blocks[i]->layout_x + blocks[i]->extents.x,
+				blocks[i]->layout_y + blocks[i]->extents.y,
 				(int)blocks[i]->size);
 
-		XftDrawStringUtf8(xres->drawable, 
-				&(xres->text_color), 
-				font, 
-				blocks[i]->layout_x + blocks[i]->extents.x, 
-				blocks[i]->layout_y + blocks[i]->extents.y, 
-				(FcChar8*)blocks[i]->text, 
+		XftDrawStringUtf8(xres->drawable,
+				&(xres->text_color),
+				font,
+				blocks[i]->layout_x + blocks[i]->extents.x,
+				blocks[i]->layout_y + blocks[i]->extents.y,
+				(FcChar8*)blocks[i]->text,
 				strlen(blocks[i]->text));
 	}
 
@@ -296,16 +296,16 @@ bool x11_blocks_resize(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, XGlyph
 			XFT_PIXEL_SIZE, XftTypeDouble, size,
 			NULL
 	);
-	
+
 	if(!font){
 		fprintf(stderr, "Could not load font\n");
 		return false;
 	}
-	
+
 	//fprintf(stderr, "Block \"%s\" extents: width %d, height %d, x %d, y %d, xOff %d, yOff %d\n",
 	//		block->text, block->extents.width, block->extents.height, block->extents.x, block->extents.y,
 	//		block->extents.xOff, block->extents.yOff);
-	
+
 	//bounds calculation
 	for(i = 0; blocks[i] && blocks[i]->active; i++){
 		//update only not yet calculated blocks
@@ -314,7 +314,7 @@ bool x11_blocks_resize(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, XGlyph
 			errlog(config, LOG_DEBUG, "Recalculated block %d (%s) extents: %dx%d\n", i, blocks[i]->text, blocks[i]->extents.width, blocks[i]->extents.height);
 			blocks[i]->size = size;
 		}
-		
+
 		//calculate bounding box over all
 		bounding_height += blocks[i]->extents.height;
 		if(blocks[i]->extents.width > bounding_width){
@@ -435,7 +435,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 	do{
 		bound_delta = bound_high - bound_low;
 		current_size = bound_low + ((double)bound_delta / (double)2);
-		
+
 		//stupid tiebreaker implementation
 		if(bound_delta / 2 == 0){
 			if(break_loop){
@@ -618,7 +618,7 @@ bool x11_recalculate_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks, u
 			return false;
 		}
 	}
-	
+
 	//do alignment pass
 	if(!x11_align_blocks(xres, config, blocks, width, height)){
 		return false;

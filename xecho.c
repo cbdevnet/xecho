@@ -28,50 +28,53 @@ int usage(char* fn){
 void errlog(CFG* config, unsigned level, char* fmt, ...){
 	va_list args;
 	va_start(args, fmt);
-	if(config->verbosity>=level){
+	if(config->verbosity >= level){
 		vfprintf(stderr, fmt, args);
 	}
 	va_end(args);
 }
 
 int main(int argc, char** argv){
-	CFG config={
-		0,		//verbosity
-		0, 		//padding
-		0,		//line spacing
-		0,		//max size
-		ALIGN_CENTER, 	//alignment
-		false, 		//independent resize
-		false, 		//handle stdin
-		false,		//draw debug boxes
-		false,		//disable text drawing
-		true,		//use double buffering
-		0, 		//forced size
-		NULL,	 	//text color
-		NULL,	 	//background color
-		NULL,		//debug color name
-		NULL,		//font name
+	CFG config = {
+		.verbosity = 0,
+		.padding = 0,
+		.line_spacing = 0,
+		.max_size = 0,
+		.alignment = ALIGN_CENTER,
+		.independent_resize = false,
+		.handle_stdin = false,
+		.debug_boxes = false,
+		.disable_text = false,
+		.double_buffer = true,
+		.force_size = 0,
+		.text_color = NULL,
+		.bg_color = NULL,
+		.debug_color = NULL,
+		.font_name = NULL,
+		.window_name = NULL
 	};
-	XRESOURCES xres={
-		0,		//screen
-		NULL,		//display
-		0,		//window
-		0,		//back buffer
-		NULL,		//xft drawable
-		{},		//text color
-		{},		//bg color
-		{},		//debug color
-		0,		//wm_delete atom
-		{NULL, 0}	//xfd set
+
+	XRESOURCES xres = {
+		.screen = 0,
+		.display = NULL,
+		.main = 0,
+		.back_buffer = 0,
+		.drawable = NULL,
+		.text_color = {},
+		.bg_color = {},
+		.debug_color = {},
+		.wm_delete = 0,
+		.xfds = {NULL, 0}
 	};
+
 	int args_end;
 	unsigned text_length, i;
-	char* args_text=NULL;
+	char* args_text = NULL;
 	long flags;
 
 	//parse command line arguments
-	args_end=args_parse(&config, argc-1, argv+1);
-	if(argc-args_end<1&&!config.handle_stdin){
+	args_end = args_parse(&config, argc - 1, argv + 1);
+	if(argc - args_end < 1 && !config.handle_stdin){
 		return usage(argv[0]);
 	}
 
@@ -89,22 +92,22 @@ int main(int argc, char** argv){
 	}
 
 	//preprocess display text if given
-	if(argc-args_end>0){
+	if(argc - args_end > 0){
 		//copy arguments into buffer
-		text_length=0;
-		for(i=args_end;i<argc;i++){
-			text_length+=strlen(argv[i])+1;
+		text_length = 0;
+		for(i = args_end; i < argc; i++){
+			text_length += strlen(argv[i]) + 1;
 		}
 
-		args_text=calloc(text_length, sizeof(char));
+		args_text = calloc(text_length, sizeof(char));
 
-		text_length=0;
-		for(i=args_end;i<argc;i++){
-			strncpy(args_text+text_length, argv[i], strlen(argv[i]));
-			text_length+=strlen(argv[i]);
-			args_text[text_length++]=' ';
+		text_length = 0;
+		for(i = args_end; i < argc; i++){
+			strncpy(args_text + text_length, argv[i], strlen(argv[i]));
+			text_length += strlen(argv[i]);
+			args_text[text_length++] = ' ';
 		}
-		args_text[((text_length>0)?text_length:1)-1]=0;
+		args_text[((text_length > 0) ? text_length:1) - 1] = 0;
 
 		errlog(&config, LOG_INFO, "Input text:\n\"%s\"\n", args_text);
 
@@ -122,11 +125,11 @@ int main(int argc, char** argv){
 	//prepare stdin
 	if(config.handle_stdin){
 		errlog(&config, LOG_INFO, "Marking stdin as nonblocking\n");
-		flags=fcntl(0, F_GETFL, 0);
-		flags|=O_NONBLOCK;
+		flags = fcntl(0, F_GETFL, 0);
+		flags |= O_NONBLOCK;
 		fcntl(0, F_SETFL, flags);
 	}
-	
+
 	//enter main loop
 	xecho(&config, &xres, args_text);
 
