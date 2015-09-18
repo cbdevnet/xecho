@@ -1,0 +1,158 @@
+.TH XECHO 1 "September 2015" "v1.0"
+
+.SH NAME
+xecho \- Render text to simple X Windows
+
+.SH SYNOPSIS
+.BI "xecho [-font " fontspec "] [-title " title "] [-bc " colorspec "] [-fc " colorspec "] "
+.BI "[-dc " fontspec "] [-size " size "] [-maxsize " size "] [-align " alignspec "] "
+.BI "[-padding " n "] [-linespacing " n "] [-stdin] [-independent-lines] [-debugboxes] "
+.BI "[-disable-text] [-disable-doublebuffer] [-v[v[v[v]]]] " text
+
+.SH DESCRIPTION
+.BR xecho " takes text from the command line or optionally (with " -stdin ") from the standard"
+input and displays it at the largest possible font size in an X11 window.
+
+.SH OPTIONS
+
+.TP
+.B --
+Stop parsing arguments and treat all following arguments as input text.
+.RS
+.B Example:
+$ xecho -font monospace -- -font monospace looks like this
+.RE
+
+.TP
+.BI "-font " fontspec
+.RI "Set the font to be used for rendering. " font " may be any freetype font name or specification."
+.RS
+.B Example:
+$ xecho -font monospace Yay, monospace! 
+.RE
+
+.TP
+.BI "-title " title
+set the X window title. This will be displayed somewhere by most window managers.
+.RS
+.B Example:
+$ xecho -title foo Bar 
+.RE
+
+.TP
+.BI "-bc | -fc | -dc " colorspec
+.RI "Set background/text/debug color. " colorspec " may be any X11 color name such as "
+.BR red " or " blue ", as well as any HTML-style hex-encoded RGB value, for example"
+.BR #ff00ff " or " #f00f00 "."
+.RS
+.B Example:
+$ xecho -bc red -fc #00ff00 Looks great! 
+.RE
+
+.TP
+.BI "-size " n
+Force font size to render at.
+.RS
+.B Example:
+$ xecho -size 10 Tiny text 
+.RE
+
+.TP
+.BI "-maxsize " n
+Limit the maximum size text is rendered at.
+.RS
+.B Example:
+$ xecho -maxsize 100 Size limited text 
+.RE
+
+.TP
+.BI "-align " alignspec
+Align all text according to a compass direction.
+.IR alignspec " must be one of
+.BR "n, ne, e, se, s, sw, w, nw."
+.RS
+.B Example:
+$ xecho -align s This text will be at the bottom of the window 
+.RE
+
+.TP
+.BI "-padding " n
+.RI "Pad the window display area by " n " pixels."
+.RS
+.B Example:
+$ xecho -padding 50 This text will be padded by 50 pixels 
+.RE
+
+.TP
+.BI "-linespacing " n
+.RI "Pad " n " pixels between lines."
+.RS
+.B Example:
+$ xecho -linespacing 50 "There are 50 pixels\enBetween these lines" 
+.RE
+
+.SH FLAGS
+
+.TP
+.B -stdin
+Read display text from stdin. This mode allows piping external programs to xecho in order
+to periodically update the displayed text. The following control characters are interpreted
+by this mode
+.RS
+.BR "\en" "	Start new line"
+.RE
+.RS
+.BR "\ef" "	Clear display"
+.RE
+.RS
+.BR "\er" "	Clear current line"
+.RE
+.RS
+.BR "\eb" "	Backspace"
+.RE
+.RS
+.B Example:
+$ while :; do printf "\ef%s" "$(date)" && sleep 1; done | xecho -stdin
+.RE
+
+.TP
+.B -independent-lines
+Maximize every line for itself.
+.RS
+.B Example:
+$ xecho -independent-lines "This line will be big\enThis line will be comparatively small"
+.RE
+
+.TP
+.B -debugboxes
+Draw debug boxes to indicate text bounding boxes.
+.RS
+.B Example:
+$ xecho -debugboxes foo 
+.RE
+
+.TP
+.B -disable-text
+Do not print text at all. Might be useful for playing tetris.
+.RS
+.B Example:
+$ xecho -disable-text There goes nothing 
+.RE
+
+.TP
+.B -disable-doublebuffer
+Disable double buffering via the XDBE extension.
+
+.TP
+.B -v[v[v[v]]]
+Increase log output verbosity.
+
+.SH BUGS
+Font size calculation might be slow on old systems.
+
+.SH AUTHOR
+cbdev <cb at cbcdn dot com>
+
+.SH SEE ALSO
+.BR xecho " was written as a lightweight replacement for " sm "(6), which does basically the same thing,"
+but with an integrated editor and more dependencies.
