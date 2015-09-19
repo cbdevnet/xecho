@@ -99,7 +99,7 @@ int main(int argc, char** argv){
 			text_length += strlen(argv[i]) + 1;
 		}
 
-		args_text = calloc(text_length, sizeof(char));
+		args_text = calloc(text_length + 1, sizeof(char));
 
 		text_length = 0;
 		for(i = args_end; i < argc; i++){
