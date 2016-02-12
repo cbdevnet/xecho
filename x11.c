@@ -167,8 +167,10 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	XFree(class_hints);
 
 	//set fullscreen mode
-	wm_state_fullscreen = XInternAtom(res->display, "_NET_WM_STATE_FULLSCREEN", False);
-	XChangeProperty(res->display, res->main, XInternAtom(res->display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char*) &wm_state_fullscreen, 1);
+	if(!config->windowed){
+		wm_state_fullscreen = XInternAtom(res->display, "_NET_WM_STATE_FULLSCREEN", False);
+		XChangeProperty(res->display, res->main, XInternAtom(res->display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char*) &wm_state_fullscreen, 1);
+	}
 
 	//allocate back drawing buffer
 	if(config->double_buffer){

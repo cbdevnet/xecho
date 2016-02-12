@@ -46,6 +46,7 @@ int main(int argc, char** argv){
 		.debug_boxes = false,
 		.disable_text = false,
 		.double_buffer = true,
+		.windowed = false,
 		.force_size = 0,
 		.text_color = NULL,
 		.bg_color = NULL,

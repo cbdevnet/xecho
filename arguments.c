@@ -57,6 +57,9 @@ int args_parse(CFG* config, int argc, char** argv){
 		else if(!strcmp(argv[i], "-disable-doublebuffer")){
 			config->double_buffer = false;
 		}
+		else if(!strcmp(argv[i], "-windowed")){
+			config->windowed = true;
+		}
 		else if(!strcmp(argv[i], "-stdin")){
 			config->handle_stdin = true;
 		}
