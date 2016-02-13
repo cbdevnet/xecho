@@ -12,6 +12,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 
 	TEXTBLOCK** blocks = NULL;
 	char* display_buffer = NULL;
+	char pressed_key;
 
 	//get initial sizes
 	window_width = DisplayWidth(xres->display, xres->screen);
@@ -95,11 +96,16 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 					break;
 
 				case KeyPress:
-					switch(event.xkey.keycode){
-						case 24:
+					//translate key event into a character, respecting keyboard layout
+					if(XLookupString(&event.xkey, &pressed_key, 1, NULL, NULL) != 1){
+						//disregard combined characters / bound strings
+						break;
+					}
+					switch(pressed_key){
+						case 'q':
 							abort = -1;
 							break;
-						case 27:
+						case 'r':
 							errlog(config, LOG_INFO, "Redrawing on request\n");
 							if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
 								fprintf(stderr, "Block calculation failed\n");
@@ -109,7 +115,7 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 							XSendEvent(xres->display, xres->main, False, 0, &event);
 							break;
 						default:
-							errlog(config, LOG_DEBUG, "KeyPress %d\n", event.xkey.keycode);
+							errlog(config, LOG_DEBUG, "KeyPress %d (%c)\n", event.xkey.keycode, pressed_key);
 							break;
 					}
 					break;
