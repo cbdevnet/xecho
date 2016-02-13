@@ -17,6 +17,7 @@ int usage(char* fn){
 	printf("\t-linespacing <n>\t\tPad lines by n pixels\n\n");
 	printf("Recognized flags:\n");
 	printf("\t-stdin\t\t\t\tUpdate text from stdin,\n\t\t\t\t\t\\f (Form feed) clears text,\n\t\t\t\t\t\\r (Carriage return) clears current line\n\n");
+	printf("\t-windowed\t\t\tDo not try to force a fullscreen window\n\n");
 	printf("\t-independent-lines\t\tResize every line individually\n\n");
 	printf("\t-debugboxes\t\t\tDraw debug boxes\n\n");
 	printf("\t-disable-text\t\t\tDo not render text at all.\n\t\t\t\t\tMight be useful for playing tetris.\n\n");

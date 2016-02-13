@@ -31,6 +31,7 @@ Options:
 
 Flags:
 -stdin			Read text from stdin
+-windowed		Do not force window to fullscreen
 -independent-lines	Scale lines independently
 -debugboxes		Draw debug boxes
 -disable-text		Do not draw text
