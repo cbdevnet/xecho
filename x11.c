@@ -81,6 +81,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 	Atom wm_state_fullscreen;
 	int xdbe_major, xdbe_minor;
 	XTextProperty window_name;
+	pid_t pid = getpid();
 
 	//allocate some structures
 	XSizeHints* size_hints = XAllocSizeHints();
@@ -171,6 +172,8 @@ bool x11_init(XRESOURCES* res, CFG* config){
 		wm_state_fullscreen = XInternAtom(res->display, "_NET_WM_STATE_FULLSCREEN", False);
 		XChangeProperty(res->display, res->main, XInternAtom(res->display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char*) &wm_state_fullscreen, 1);
 	}
+
+	XChangeProperty(res->display, res->main, XInternAtom(res->display, "_NET_WM_PID", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&pid, 1);
 
 	//allocate back drawing buffer
 	if(config->double_buffer){
