@@ -1,13 +1,14 @@
-export PREFIX?=$(DESTDIR)/usr/bin
-export DOCDIR?=$(DESTDIR)/usr/share/man/man1
+export PREFIX?=/usr
+export DOCDIR?=$(DESTDIR)$(PREFIX)/share/man/man1
 
 .PHONY: all clean
-CFLAGS?=-g -Wall -I/usr/include/freetype2 -lXft -lm -lXext -lX11
+CFLAGS?=-g -Wall $(shell freetype-config --cflags)
+LDLIBS?=$(shell freetype-config --libs) -lXft -lm -lXext -lX11
 
 all: xecho xecho.1.gz
 
 install:
-	install -m 0755 xecho "$(PREFIX)"
+	install -m 0755 xecho "$(DESTDIR)$(PREFIX)/bin"
 	install -g 0 -o 0 -m 0644 xecho.1.gz "$(DOCDIR)"
 
 xecho.1.gz:
