@@ -4,7 +4,7 @@ int usage(char* fn){
 	printf("xecho - Render text to X\n\n");
 	printf("Usage: %s <arguments> <text>\n", fn);
 	printf("Recognized options:\n");
-	printf("\t--\t\t\t\tStop argument parsing,\n\t\t\t\t\ttreat all following arguments as text\n\n");
+	printf("\t--\t\t\t\tStop argument parsing,\n\t\t\t\t\ttreat all following arguments as content text\n\n");
 	printf("\t-font <fontspec>\t\tSelect font by FontConfig name\n\n");
 	printf("\t-fc <colorspec>\t\t\tSet text color by name or HTML code\n\n");
 	printf("\t-bc <colorspec>\t\t\tSet background color by name or code\n\n");
@@ -16,13 +16,17 @@ int usage(char* fn){
 	printf("\t-padding <n>\t\t\tPad text by n pixels\n\n");
 	printf("\t-linespacing <n>\t\tPad lines by n pixels\n\n");
 	printf("Recognized flags:\n");
-	printf("\t-stdin\t\t\t\tUpdate text from stdin,\n\t\t\t\t\t\\f (Form feed) clears text,\n\t\t\t\t\t\\r (Carriage return) clears current line\n\n");
+	printf("\t-no-stdin\t\t\tDisable content updates from stdin\n\n");
 	printf("\t-windowed\t\t\tDo not try to force a fullscreen window\n\n");
 	printf("\t-independent-lines\t\tResize every line individually\n\n");
 	printf("\t-debugboxes\t\t\tDraw debug boxes\n\n");
 	printf("\t-disable-text\t\t\tDo not render text at all.\n\t\t\t\t\tMight be useful for playing tetris.\n\n");
 	printf("\t-disable-doublebuffer\t\tDo not use XDBE\n\n");
+	printf("\t-h | -help | --help\t\tPrint this usage information\n\n");
 	printf("\t-v[v[v]]\t\t\tIncrease output verbosity\n\n");
+	printf("stdin content update protocol:\n");
+	printf("\t\\f (Form feed) clears text,\n");
+	printf("\t\\r (Carriage return) clears current line\n\n");
 	return 1;
 }
 
@@ -43,11 +47,12 @@ int main(int argc, char** argv){
 		.max_size = 0,
 		.alignment = ALIGN_CENTER,
 		.independent_resize = false,
-		.handle_stdin = false,
+		.handle_stdin = true,
 		.debug_boxes = false,
 		.disable_text = false,
 		.double_buffer = true,
 		.windowed = false,
+		.print_usage = false,
 		.force_size = 0,
 		.text_color = NULL,
 		.bg_color = NULL,

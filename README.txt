@@ -30,12 +30,14 @@ Options:
 -linespacing <n>	Pad between lines
 
 Flags:
--stdin			Read text from stdin
+-stdin			Deprecated / No-op
+-no-stdin		Disable text content update via stdin
 -windowed		Do not force window to fullscreen
 -independent-lines	Scale lines independently
 -debugboxes		Draw debug boxes
 -disable-text		Do not draw text
 -disable-doublebuffer	What it says on the tin
+-h | -help | --help	Display usage information
 -v[v[v[v]]]		Increase verbosity
 
 Where <colorspec> is either an X Color name (blue, red,
@@ -45,13 +47,14 @@ and <alignspec> is one of n|ne|e|se|s|sw|w|nw
 
 Options must be given before a text argument starts.
 Command line option parsing can be stopped with --,
-eg.: ./xecho -bc blue -fc yellow -- -stdin is cool!
+eg.: ./xecho -bc blue -fc yellow -- -help shows usage information
 
 Text passed via the command line is scanned once for
 control character encodings (\n and \\), which
 are replaced by their ASCII codepoints.
 
-Control characters are handled as follows
+By default, xecho reads text from stdin and appends it to the window
+content. Control characters on stdin are handled as follows
 	\n		Starts new line
 	\f		Clears display
 	\r		Clears current line
@@ -60,7 +63,7 @@ Control characters are handled as follows
 Usage examples:
 
 	while :; do printf "\f%s" "`date`" \
-		&& sleep 1; done | ./xecho -stdin
+		&& sleep 1; done | ./xecho
 
 	Displays the current date updated by every second.
 	The output of `date` is handled by printf to avoid

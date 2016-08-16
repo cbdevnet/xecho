@@ -60,11 +60,18 @@ int args_parse(CFG* config, int argc, char** argv){
 		else if(!strcmp(argv[i], "-windowed")){
 			config->windowed = true;
 		}
+		//this parameter is now a noop and deprecated, but still recognized for compatability reasons
 		else if(!strcmp(argv[i], "-stdin")){
 			config->handle_stdin = true;
 		}
+		else if(!strcmp(argv[i], "-no-stdin")){
+			config->handle_stdin = false;
+		}
 		else if(!strcmp(argv[i], "-debugboxes")){
 			config->debug_boxes = true;
+		}
+		else if(!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")){
+			config->print_usage = true;
 		}
 		else if(!strcmp(argv[i], "-fc")){
 			if(++i < argc && !(config->text_color)){
@@ -244,6 +251,10 @@ bool args_sane(CFG* config){
 		fprintf(stderr, "Window colorspec: %s\n", config->bg_color);
 		fprintf(stderr, "Debug colorspec: %s\n", config->debug_color);
 		fprintf(stderr, "Font name: %s\n", config->font_name);
+	}
+
+	if(config->print_usage){
+		return false;
 	}
 
 	return true;

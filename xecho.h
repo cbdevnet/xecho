@@ -35,6 +35,7 @@ typedef struct /*_CFG_ARGS*/ {
 	bool disable_text;
 	bool double_buffer;
 	bool windowed;
+	bool print_usage;
 	double force_size;
 	char* text_color;
 	char* bg_color;

@@ -1,16 +1,16 @@
-.TH XECHO 1 "September 2015" "v1.0"
+.TH XECHO 1 "August 2016" "v1.1"
 
 .SH NAME
 xecho \- Render text to simple X Windows
 
 .SH SYNOPSIS
-.BI "xecho [-font " fontspec "] [-title " title "] [-bc " colorspec "] [-fc " colorspec "] "
+.BI "xecho [-h | -help | --help] [-font " fontspec "] [-title " title "] [-bc " colorspec "] [-fc " colorspec "] "
 .BI "[-dc " fontspec "] [-size " size "] [-maxsize " size "] [-align " alignspec "] "
-.BI "[-padding " n "] [-linespacing " n "] [-stdin] [-independent-lines] [-debugboxes] "
+.BI "[-padding " n "] [-linespacing " n "] [-no-stdin] [-windowed] [-independent-lines] [-debugboxes] "
 .BI "[-disable-text] [-disable-doublebuffer] [-v[v[v[v]]]] " text
 
 .SH DESCRIPTION
-.BR xecho " takes text from the command line or optionally (with " -stdin ") from the standard"
+.BR xecho " takes text from the command line or from the standard"
 input and displays it at the largest possible font size in an X11 window.
 
 .SH OPTIONS
@@ -94,25 +94,22 @@ $ xecho -linespacing 50 "There are 50 pixels\enBetween these lines"
 .SH FLAGS
 
 .TP
-.B -stdin
-Read display text from stdin. This mode allows piping external programs to xecho in order
-to periodically update the displayed text. The following control characters are interpreted
-by this mode
-.RS
-.BR "\en" "	Start new line"
-.RE
-.RS
-.BR "\ef" "	Clear display"
-.RE
-.RS
-.BR "\er" "	Clear current line"
-.RE
-.RS
-.BR "\eb" "	Backspace"
-.RE
+.B -h | -help | --help
+Print usage information.
+
+.TP
+.B -stdin 
+Deprecated / No-op. Reading date from stdin has since become the standard and
+this argument is only provided for compatability reasons.
+
+.TP
+.B -no-stdin
+Disable text content updates from stdin (see
+.B STDIN UPDATE PROTOCOL
+below for more information)
 .RS
 .B Example:
-$ while :; do printf "\ef%s" "$(date)" && sleep 1; done | xecho -stdin
+$ xecho -no-stdin This text can not be updated
 .RE
 
 .TP
@@ -128,7 +125,7 @@ $ xecho -independent-lines "This line will be big\enThis line will be comparativ
 Draw debug boxes to indicate text bounding boxes.
 .RS
 .B Example:
-$ xecho -debugboxes foo 
+$ xecho -debugboxes foo
 .RE
 
 .TP
@@ -136,20 +133,56 @@ $ xecho -debugboxes foo
 Do not print text at all. Might be useful for playing tetris.
 .RS
 .B Example:
-$ xecho -disable-text There goes nothing 
+$ xecho -disable-text There goes nothing
 .RE
 
 .TP
 .B -disable-doublebuffer
 Disable double buffering via the XDBE extension.
+.RS
+.B Example:
+$ xecho -disable-doublebuffer Resizing this window might flicker
+.RE
 
 .TP
 .B -windowed
 Do not try to force full screen display.
+.RS
+.B Example:
+$ xecho -windowed This window can be resized
+.RE
 
 .TP
 .B -v[v[v[v]]]
 Increase log output verbosity.
+.RS
+.B Example:
+$ xecho -vvvv Tell me more!
+.RE
+
+.SH STDIN UPDATE PROTOCOL
+By default, xecho reads text from stdin and appends it to the window content.
+Some control characters are assigned special functions to allow for advanced usage.
+.RS
+.BR "\en" "	Start new line"
+.RE
+.RS
+.BR "\ef" "	Clear display"
+.RE
+.RS
+.BR "\er" "	Clear current line"
+.RE
+.RS
+.BR "\eb" "	Backspace"
+.RE
+.RS
+.B Example:
+$ while :; do printf "\ef%s" "$(date)" && sleep 1; done | xecho
+.RE
+The stdin update facility can be disabled with the
+.B -no-stdin
+argument.
+
 
 .SH BUGS
 Font size calculation might be slow on old systems.
