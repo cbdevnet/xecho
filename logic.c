@@ -7,6 +7,8 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 	XEvent event;
 	XdbeSwapInfo swap_info;
 
+	bool reconfigured = false, exposed = false;
+
 	unsigned window_width, window_height;
 	unsigned display_buffer_length = 0, display_buffer_offset;
 
@@ -46,29 +48,22 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 	}
 
 	while(!abort){
+		//indicators for aggregating events
+		reconfigured = false;
+		exposed = false;
+
 		//handle events
 		while(XPending(xres->display)){
 			XNextEvent(xres->display, &event);
 			//handle events
 			switch(event.type){
 				case ConfigureNotify:
+					//trigger block recalculation
+					reconfigured = true;
 					errlog(config, LOG_INFO, "Window configured to %dx%d\n", event.xconfigure.width, event.xconfigure.height);
 					if(window_width != event.xconfigure.width || window_height != event.xconfigure.height){
 						window_width = event.xconfigure.width;
 						window_height = event.xconfigure.height;
-
-						errlog(config, LOG_DEBUG, "Recalculating blocks\n");
-
-						//recalculate size
-						if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
-							fprintf(stderr, "Block calculation failed\n");
-							abort = -1;
-						}
-
-						if(config->double_buffer){
-							//update drawable
-							XftDrawChange(xres->drawable, xres->back_buffer);
-						}
 					}
 					else{
 						errlog(config, LOG_DEBUG, "Configuration not changed, ignoring\n");
@@ -76,23 +71,8 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 					break;
 
 				case Expose:
-					//draw here
-					errlog(config, LOG_INFO, "Expose message, initiating redraw\n");
-					if(!config->double_buffer){
-						errlog(config, LOG_DEBUG, "Clearing window\n");
-						XClearWindow(xres->display, xres->main);
-					}
-					if(!x11_draw_blocks(config, xres, blocks)){
-						fprintf(stderr, "Failed to draw blocks\n");
-						abort = -1;
-					}
-					if(config->double_buffer){
-						errlog(config, LOG_DEBUG, "Swapping buffers\n");
-						swap_info.swap_window = xres->main;
-						swap_info.swap_action = XdbeBackground;
-						XdbeSwapBuffers(xres->display, &swap_info, 1);
-					}
-
+					//trigger frame redraw
+					exposed = true;
 					break;
 
 				case KeyPress:
@@ -133,6 +113,40 @@ int xecho(CFG* config, XRESOURCES* xres, char* initial_text){
 				default:
 					errlog(config, LOG_INFO, "Unhandled X event\n");
 					break;
+			}
+		}
+		
+		if(reconfigured){
+			errlog(config, LOG_DEBUG, "Recalculating blocks\n");
+
+			//recalculate size
+			if(!x11_recalculate_blocks(config, xres, blocks, window_width, window_height)){
+				fprintf(stderr, "Block calculation failed\n");
+				abort = -1;
+			}
+
+			if(config->double_buffer){
+				//update drawable
+				XftDrawChange(xres->drawable, xres->back_buffer);
+			}
+		}
+
+		if(reconfigured || exposed){
+			//draw here
+			errlog(config, LOG_INFO, "Window exposed or reconfigured, initiating redraw\n");
+			if(!config->double_buffer){
+				errlog(config, LOG_DEBUG, "Clearing window\n");
+				XClearWindow(xres->display, xres->main);
+			}
+			if(!x11_draw_blocks(config, xres, blocks)){
+				fprintf(stderr, "Failed to draw blocks\n");
+				abort = -1;
+			}
+			if(config->double_buffer){
+				errlog(config, LOG_DEBUG, "Swapping buffers\n");
+				swap_info.swap_window = xres->main;
+				swap_info.swap_action = XdbeBackground;
+				XdbeSwapBuffers(xres->display, &swap_info, 1);
 			}
 		}
 
