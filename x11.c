@@ -1,79 +1,3 @@
-bool xfd_add(X_FDS* set, int fd){
-	unsigned i;
-
-	if(!set->fds){
-		set->fds = malloc(sizeof(int));
-		if(!set->fds){
-			fprintf(stderr, "xfd_add: Initial alloc failed\n");
-			return false;
-		}
-		set->size = 1;
-		set->fds[0] = fd;
-		return true;
-	}
-
-	for(i = 0; i < set->size; i++){
-		if(set->fds[i] == fd){
-			fprintf(stderr, "xfd_add: Not pushing duplicate entry\n");
-			return false;
-		}
-	}
-
-	set->fds = realloc(set->fds, (set->size + 1) * sizeof(int));
-	if(!set->fds){
-		fprintf(stderr, "xfd_add: Failed to realloc fd set\n");
-		return false;
-	}
-
-	set->fds[set->size] = fd;
-	set->size++;
-
-	return true;
-}
-
-bool xfd_remove(X_FDS* set, int fd){
-	unsigned i, c;
-
-	for(i = 0; i < set->size; i++){
-		if(set->fds[i] == fd){
-			for(c = i; c < set->size - 1; c++){
-				set->fds[c] = set->fds[c + 1];
-			}
-
-			set->size--;
-			set->fds = realloc(set->fds, set->size * sizeof(int));
-			if(!set->fds && set->size > 0){
-				fprintf(stderr, "xfd_remove: Failed to realloc\n");
-				return false;
-			}
-			return true;
-		}
-	}
-
-	fprintf(stderr, "xfd_remove: FD not in set\n");
-	return false;
-}
-
-void xfd_free(X_FDS* set){
-	if(set->fds){
-		free(set->fds);
-		set->fds = NULL;
-	}
-	set->size = 0;
-}
-
-void xconn_watch(Display* dpy, XPointer client_data, int fd, Bool opening, XPointer* watch_data){
-	if(opening){
-		fprintf(stderr, "xconn_watch: Internal connection registered\n");
-		xfd_add((X_FDS*)client_data, fd);
-	}
-	else{
-		fprintf(stderr, "xconn_watch: Internal connection closed\n");
-		xfd_remove((X_FDS*)client_data, fd);
-	}
-}
-
-
 bool x11_init(XRESOURCES* res, CFG* config){
 	Window root;
 	XSetWindowAttributes window_attributes;
@@ -158,7 +82,7 @@ bool x11_init(XRESOURCES* res, CFG* config){
 
 	wm_hints->flags = 0;
 	class_hints->res_name = "xecho";
-	class_hints->res_class="xecho";
+	class_hints->res_class = "xecho";
 
 	XSetWMProperties(res->display, res->main, &window_name, NULL, NULL, 0, NULL, wm_hints, class_hints);
 
@@ -251,7 +175,7 @@ bool x11_draw_blocks(CFG* config, XRESOURCES* xres, TEXTBLOCK** blocks){
 	//draw all blocks
 	for(i = 0; blocks[i] && blocks[i]->active; i++){
 		//load font
-		if(!font || (font&&current_size != blocks[i]->size)){
+		if(!font || (font && current_size != blocks[i]->size)){
 			if(font){
 				XftFontClose(xres->display, font);
 			}

@@ -11,6 +11,8 @@
 #include <X11/Xft/Xft.h>
 #include <X11/extensions/Xdbe.h>
 
+#include "xfds.h"
+
 typedef enum /*_ALIGNMENT*/ {
 	ALIGN_CENTER,
 	ALIGN_NORTH,
@@ -43,11 +45,6 @@ typedef struct /*_CFG_ARGS*/ {
 	char* font_name;
 	char* window_name;
 } CFG;
-
-typedef struct /*XFD_AGGREG*/ {
-	int* fds;
-	unsigned size;
-} X_FDS;
 
 typedef struct /*_XDATA*/ {
 	int screen;
@@ -83,6 +80,7 @@ typedef struct /*_TEXT_BLOCK*/ {
 #define LOG_INFO 2
 void errlog(CFG* config, unsigned level, char* fmt, ...);
 
+#include "xfds.c"
 #include "colorspec.c"
 #include "arguments.c"
 #include "strings.c"
