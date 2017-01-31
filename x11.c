@@ -296,7 +296,7 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		}
 		else{
 			//educated guess
-			current_size = fabs(width / ((strlen(blocks[longest_block]->text) > 0) ? strlen(blocks[longest_block]->text):1));
+			current_size = roundf(width / ((strlen(blocks[longest_block]->text) > 0) ? strlen(blocks[longest_block]->text):1));
 		}
 	}
 	else{
@@ -368,7 +368,8 @@ bool x11_maximize_blocks(XRESOURCES* xres, CFG* config, TEXTBLOCK** blocks, unsi
 		//stupid tiebreaker implementation
 		if(bound_delta / 2 == 0){
 			if(break_loop){
-				current_size = bound_high;
+				current_size = bound_low;
+				bound_delta = 0;
 			}
 			else{
 				break_loop = true;
