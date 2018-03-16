@@ -11,10 +11,13 @@ directly using Xlib and Xft for it's functionality.
 Double buffering is done by using the X Double
 Buffering Extension (XDBE) and can be disabled.
 
-The latest development version can be checked out via 
-git from http://git.services.cbcdn.com/xecho/
-Tagged releases are archived at 
-	http://dev.cbcdn.com/xecho/
+This repository contains the latest development version
+of xecho. Release tarballs are available at the tag page
+and are archived at
+	https://dev.cbcdn.com/xecho/
+
+Should this repository ever move, the new location will be
+announced there.
 
 Options:
 --			Stop argument parsing
