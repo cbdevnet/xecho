@@ -2,8 +2,9 @@ export PREFIX?=/usr
 export DOCDIR?=$(DESTDIR)$(PREFIX)/share/man/man1
 
 .PHONY: all clean
-CFLAGS?=-g -Wall $(shell freetype-config --cflags)
-LDLIBS?=$(shell freetype-config --libs) -lXft -lm -lXext -lX11
+CFLAGS?=-g -Wall 
+CFLAGS+=$(shell freetype-config --cflags)
+LDLIBS+=$(shell freetype-config --libs) -lXft -lm -lXext -lX11
 
 all: xecho xecho.1.gz
 
