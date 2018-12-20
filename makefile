@@ -2,9 +2,10 @@ export PREFIX?=/usr
 export DOCDIR?=$(DESTDIR)$(PREFIX)/share/man/man1
 
 .PHONY: all clean
+PKG_CONFIG?=pkg-config
 CFLAGS?=-g -Wall 
-CFLAGS+=$(shell freetype-config --cflags)
-LDLIBS+=$(shell freetype-config --libs) -lXft -lm -lXext -lX11
+CFLAGS+=$(shell $(PKG_CONFIG) --cflags freetype2)
+LDLIBS+=$(shell $(PKG_CONFIG) --libs freetype2) -lXft -lm -lXext -lX11
 
 all: xecho xecho.1.gz
 
