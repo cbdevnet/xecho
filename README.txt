@@ -78,6 +78,7 @@ Build prerequisites:
 	- libxft-dev
 	- libx11-dev
 	- libxext-dev
+	- pkg-config
 	- A C compiler (tcc does the trick)
 
 To compile, simply run make.
